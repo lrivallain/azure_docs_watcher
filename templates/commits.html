@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ folder }}{% endblock %}
+{% block content %}
+<h2>
+  {{ owner }}/{{ repository }}{{ folder }}
+  <a href="https://github.com/{{ owner }}/{{ repository }}/tree/main/{{ folder }}" target="_blank"
+    title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
+</h2>
+<p class="lead">
+  {% if commits|length >= 1 %} Last {{commits|length}} commits:
+  {% else %} No commit in the last {{ since }} days.
+  {% endif %}
+</p>
+<div class="row row-cols-auto">
+  {% for commit in commits %}
+  <div class="col mb-3 col-12 col-md-4">
+    <div class="card text-bg-light h-100">
+      <h5 class="card-header">
+        {{ commit.sha }}
+      </h5>
+      <div class="card-body">
+        <figure>
+          <blockquote class="blockquote fs-6">
+            <p>{{ commit.message }}</p>
+          </blockquote>
+          <figcaption class="blockquote-footer">
+            {{ commit.author }} committed on {{ commit.date }}
+          </figcaption>
+        </figure>
+      </div>
+      <div class="card-footer text-center">
+        <a href="{{ commit.url }}" target="_blank"><i class="bi bi-github"></i> View commit</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</main>
+{% endblock %}
