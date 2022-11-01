@@ -7,7 +7,7 @@
     title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
 </h2>
 <p class="lead">
-  {% if commits|length >= 1 %} Last {{commits|length}} commits:
+  {% if commits|length >= 1 %} Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}:
   {% else %} No commit in the last {{ since }} days.
   {% endif %}
 </p>

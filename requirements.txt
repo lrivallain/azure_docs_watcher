@@ -1,3 +1,6 @@
 Flask
 coloredlogs
 PyGithub
+authlib
+Flask-Login
+flask_dance

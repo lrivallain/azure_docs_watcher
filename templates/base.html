@@ -43,10 +43,25 @@
               <a class="nav-link active" aria-current="page" href="/" title="Go to home page"><i
                   class="bi bi-house-door"></i></a>
             </li>
+            {% if session.username %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-check"></i> {{ session.username }}
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/logout" title="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="/login" title="Login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+            </li>
+            {% endif %}
           </ul>
-          <div>
-          </div>
+        <div>
+      </div>
     </nav>
+    {% if not session.username %}
     <div class="d-flex alert alert-warning pb-0" role="alert">
       <div class="flex-shrink-0">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -59,8 +74,10 @@
           <li>Commits logs are retrieved over the last <strong>{{ since }} days</strong>.</li>
           <li>Only the last <strong>{{ max_commits }} commits</strong> are retrieved over this period.</li>
         </ul>
+        <p>You can <a href="/login" title="Login">login with a GitHub account</a> to bypass the last limit.</p>
       </div>
     </div>
+    {% endif %}
 
     <main class="px-3 py-3">
       {% block content %}{% endblock %}

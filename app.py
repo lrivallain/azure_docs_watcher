@@ -2,20 +2,28 @@
 
 import os
 import datetime
-from markupsafe import escape
 import logging
+import secrets
+from functools import wraps
+from markupsafe import escape
 
-from flask import Flask, render_template, Response, request
+from flask import (
+    Flask,
+    render_template,
+    Response,
+    request,
+    redirect,
+    url_for,
+    session,
+    g,
+)
+import coloredlogs
 from github import Github, Repository
 from github import UnknownObjectException, RateLimitExceededException
-import coloredlogs
+from flask_dance.contrib.github import make_github_blueprint, github as gh_auth
 
-# configuration
-SINCE = os.environ.get("AZDOCSWATCH_SINCE", 5)
-MAX_COMMITS = os.environ.get("AZDOCSWATCH_MAX_COMMITS", 20)
-AZURE_DOCS_REPO = "azure-docs"
-AZURE_DOCS_OWNER = "MicrosoftDocs"
-AZURE_DOCS_ARTICLES_FOLDER_PREFIX = "/articles/"
+# Import local configuration
+from config import *
 
 # configure logging
 log = logging.getLogger(__name__)
@@ -23,19 +31,75 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 # create the Flask app
 app = Flask(__name__)
-app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.secret_key = secrets.token_hex()
 if app.debug:
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
     coloredlogs.install(level="DEBUG")
 else:
     coloredlogs.install(level="INFO")
 
-# create the Github client
-if not os.environ.get("GITHUB_ACCESS_TOKEN"):
-    raise Exception("GITHUB_ACCESS_TOKEN environment variable is not set")
-g = Github(os.environ.get("GITHUB_ACCESS_TOKEN"))
+# configure the gh-based login manager
+blueprint = make_github_blueprint(
+    client_id=GITHUB_CLIENT_ID, client_secret=GITHUB_CLIENT_SECRET
+)
+app.register_blueprint(blueprint, url_prefix="/login")
+
+
+def login_suggested(f):
+    """Decorator to manage the GitHub login suggestion to bypass performance limits.
+
+    Args:
+        f (_type_): function to decorate
+
+    Returns:
+        function: decorated function
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        log.debug("Checking if user is authenticated")
+        g.using_shared_gh = True
+        if not gh_auth.authorized:
+            g.gh_token = GITHUB_ACCESS_TOKEN
+        else:
+            resp = gh_auth.get("/user")
+            if not resp.json().get("login"):
+                log.warn("User used to be authenticated but is not anymore")
+                return redirect(url_for("github.login"))
+            log.debug("User is authenticated")
+            session["username"] = resp.json()["login"]
+            g.gh_token = gh_auth.token.get("access_token")
+            g.using_shared_gh = False
+        g.gh = Github(g.gh_token)
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+@app.route("/login")
+def login():
+    """Login route.
+
+    Redirects to GitHub login page.
+    """
+    return redirect(url_for("github.login"))
+
+
+@app.route("/logout")
+def logout():
+    """Logout route: remove session data.
+
+    Warning: the GitHub token is not revoked !
+
+    Returns:
+        flask.redirect: Redirect to the home page
+    """
+    session.clear()
+    return redirect(url_for("home"))
 
 
 @app.route("/")
+@login_suggested
 def home():
     """List files and folders to get commits logs from.
 
@@ -44,12 +108,14 @@ def home():
     """
     log.debug("Looking for repository %s/%s", AZURE_DOCS_OWNER, AZURE_DOCS_REPO)
     try:
-        repo = g.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+        repo = g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
     except UnknownObjectException:
         return Response("Repository not found", status=404)
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
-
+    except Exception as e:
+        log.error(e)
+        return Response("Error while listing files and folders", status=500)
     log.debug("Listing files and folders in %s", AZURE_DOCS_ARTICLES_FOLDER_PREFIX)
     try:
         contents = repo.get_dir_contents(
@@ -57,7 +123,8 @@ def home():
         )
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
-    except:
+    except Exception as e:
+        log.error(e)
         return Response("Error while listing files and folders", status=500)
     return render_template(
         "index.html",
@@ -70,7 +137,7 @@ def home():
 
 
 @app.route(f"/{AZURE_DOCS_ARTICLES_FOLDER_PREFIX}<path:folder>")
-# @app.errorhandler(400)
+@login_suggested
 def track(folder: str):
     """Track a folder in a repository
 
@@ -80,15 +147,17 @@ def track(folder: str):
     Returns:
         str: html page
     """
-    _max_commits = int(request.args.get("max_commits", MAX_COMMITS))
     _since = int(request.args.get("since", SINCE))
     log.debug("Looking for repository %s/%s", AZURE_DOCS_OWNER, AZURE_DOCS_REPO)
     if not folder:
         return Response("Missing folder or file to like for changes", status=400)
     try:
-        repo = g.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+        repo = g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
     except UnknownObjectException:
         return Response("Repository not found", status=404)
+    except Exception as e:
+        log.error(e)
+        return Response("Error while listing commits", status=500)
 
     log.debug("Calculating the reference date")
     tod = datetime.datetime.now()
@@ -103,8 +172,11 @@ def track(folder: str):
         log.debug(f"{commits.totalCount} commits found in the last {_since} days")
         _commits = []
         if commits.totalCount > 0:
-            if commits.totalCount > _max_commits:
-                commits = commits[:_max_commits]
+            if commits.totalCount > MAX_COMMITS and g.using_shared_gh:
+                log.info(
+                    "Using shared Github client: limiting commits to %s", MAX_COMMITS
+                )
+                commits = commits[:MAX_COMMITS]
             for commit in commits:
                 _commits.append(
                     {
@@ -129,12 +201,17 @@ def track(folder: str):
         folder=escape(_folder_path),
         commits=_commits,
         max_commits=MAX_COMMITS,
-        since=SINCE,
+        since=_since,
     )
 
 
 @app.route("/favicon.svg")
 def favicon():
+    """Serve the favicon.
+
+    Returns:
+        flask.send_from_directory: favicon served by Flask.
+    """
     return send_from_directory(
         os.path.join(app.root_path, "static"), "favicon.svg", mimetype="image/svg+xml"
     )
