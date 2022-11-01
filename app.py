@@ -12,7 +12,7 @@ import coloredlogs
 
 # configuration
 SINCE = os.environ.get("AZDOCSWATCH_SINCE", 5)
-MAX_COMMITS = os.environ.get("AZDOCSWATCH_SINCE", 20)
+MAX_COMMITS = os.environ.get("AZDOCSWATCH_MAX_COMMITS", 20)
 AZURE_DOCS_REPO = "azure-docs"
 AZURE_DOCS_OWNER = "MicrosoftDocs"
 AZURE_DOCS_ARTICLES_FOLDER_PREFIX = "/articles/"
