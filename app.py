@@ -27,6 +27,7 @@ from flask_dance.contrib.github import make_github_blueprint, github as gh_auth
 
 # Import local configuration
 from config import *
+from utils import get_commits, get_feed
 
 # configure logging
 log = logging.getLogger(__name__)
@@ -164,35 +165,12 @@ def track(folder: str):
         log.error(e)
         return Response("Error while listing commits", status=500)
 
-    log.debug("Calculating the reference date")
-    tod = datetime.datetime.now()
-    delta_since = datetime.timedelta(days=_since)
-    ref_date = tod - delta_since
-
     _folder_path = os.path.join(AZURE_DOCS_ARTICLES_FOLDER_PREFIX, folder)
 
     try:
-        commits = repo.get_commits(path=_folder_path, since=ref_date, until=tod)
-
-        log.debug(f"{commits.totalCount} commits found in the last {_since} days")
-        _commits = []
-        if commits.totalCount > 0:
-            if commits.totalCount > MAX_COMMITS and g.using_shared_gh:
-                log.info(
-                    "Using shared Github client: limiting commits to %s", MAX_COMMITS
-                )
-                commits = commits[:MAX_COMMITS]
-            for commit in commits:
-                _commits.append(
-                    {
-                        "sha": escape(commit.sha[:7]),
-                        "author": escape(commit.author.name),
-                        "commit": escape(commit.commit),
-                        "url": escape(commit.html_url),
-                        "message": escape(commit.commit.message),
-                        "date": escape(commit.commit.author.date),
-                    }
-                )
+        commits = get_commits(
+            repo, _folder_path, _since, shared_token=g.using_shared_gh
+        )
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
     except Exception as e:
@@ -204,10 +182,48 @@ def track(folder: str):
         owner=escape(AZURE_DOCS_OWNER),
         repository=escape(AZURE_DOCS_REPO),
         folder=escape(_folder_path),
-        commits=_commits,
+        commits=commits,
         max_commits=MAX_COMMITS,
         since=_since,
     )
+
+
+@app.route(f"/feed/{AZURE_DOCS_ARTICLES_FOLDER_PREFIX}<path:folder>")
+@login_suggested
+def feed(folder: str):
+    """RSS Feed of commits in a folder of the repository
+
+    Args:
+        folder (str): folder to track
+
+    Returns:
+        str: rss feed
+    """
+    _since = int(request.args.get("since", SINCE))
+    log.debug("Looking for repository %s/%s", AZURE_DOCS_OWNER, AZURE_DOCS_REPO)
+    if not folder:
+        return Response("Missing folder or file to like for changes", status=400)
+    try:
+        repo = g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+    except UnknownObjectException:
+        return Response("Repository not found", status=404)
+    except Exception as e:
+        log.error(e)
+        return Response("Error while listing commits", status=500)
+    log.debug("Listing commits in %s", folder)
+    _folder_path = os.path.join(AZURE_DOCS_ARTICLES_FOLDER_PREFIX, folder)
+
+    try:
+        commits = get_commits(
+            repo, _folder_path, _since, shared_token=g.using_shared_gh
+        )
+    except RateLimitExceededException:
+        return Response("Rate limit exceeded", status=429)
+    except Exception as e:
+        log.error(e)
+        return Response("Error while listing commits", status=500)
+
+    return Response(get_feed(commits, folder), mimetype="text/xml")
 
 
 @app.route("/favicon.svg")

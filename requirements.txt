@@ -1,6 +1,12 @@
+# Server
 Flask
+# Logging
 coloredlogs
+# GitHub client
 PyGithub
+# oAuth2
 authlib
 Flask-Login
 flask_dance
+# RSS
+feedgen
