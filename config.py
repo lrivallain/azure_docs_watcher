@@ -5,8 +5,8 @@ import os
 
 
 # Performances limits
-SINCE = os.getenv("AZDOCSWATCH_SINCE", 5)
-MAX_COMMITS = os.getenv("AZDOCSWATCH_MAX_COMMITS", 20)
+SINCE = int(os.getenv("AZDOCSWATCH_SINCE", 5))
+MAX_COMMITS = int(os.getenv("AZDOCSWATCH_MAX_COMMITS", 20))
 
 # GitHub application configuration
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
