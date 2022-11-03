@@ -17,6 +17,9 @@ from flask import (
     session,
     g,
 )
+from werkzeug.middleware.proxy_fix import (
+    ProxyFix,
+)  # https://flask.palletsprojects.com/en/latest/deploying/proxy_fix/
 import coloredlogs
 from github import Github, Repository
 from github import UnknownObjectException, RateLimitExceededException
@@ -36,6 +39,8 @@ if app.debug:
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     coloredlogs.install(level="DEBUG")
 else:
+    # https://flask.palletsprojects.com/en/latest/deploying/proxy_fix/
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     coloredlogs.install(level="INFO")
 
 # configure the gh-based login manager
