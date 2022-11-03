@@ -2,16 +2,18 @@
 name: Feature Enhancement
 about: Suggest a new idea or enhancement for Azure Docs changes watcher
 title: 'Feature: '
-labels: enhancement
-assignees: ''                                                                                                           
+labels: ["enhancement", "triage"]
+assignees: ''
 ---
 
 ### Problem description
+
 If applicable: a clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
 ### Describe the solution you'd like
+
 A clear and concise description of what you want to happen.
 
 ### Additional context
-Add any other context or screenshots about the feature request here.
 
+Add any other context or screenshots about the feature request here.
