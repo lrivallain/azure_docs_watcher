@@ -1,3 +1,5 @@
+<img src="/static/favicon.svg" width="250">
+
 # [Azure Docs changes watcher](https://azdocswatch.vupti.me)
 
 Watch changes in the Azure docs repository.
