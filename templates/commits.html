@@ -5,6 +5,8 @@
   {{ owner }}/{{ repository }}{{ folder }}
   <a href="https://github.com/{{ owner }}/{{ repository }}/tree/main/{{ folder }}" target="_blank"
     title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
+  <a href="/feed{{ folder }}" title="Get last changes for this path" style="color:#fd7e14;"
+    title="RSS Feed of the last changes for this section"><i class="bi bi-rss"></i></a>
 </h2>
 <p class="lead">
   {% if commits|length >= 1 %} Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}:

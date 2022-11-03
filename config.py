@@ -21,3 +21,8 @@ AZURE_DOCS_ARTICLES_FOLDER_PREFIX = "/articles/"
 GITHUB_ACCESS_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
 if not GITHUB_ACCESS_TOKEN:
     raise Exception("GITHUB_ACCESS_TOKEN environment variable is not set")
+
+# App details
+APP_AUTHOR = "Ludovic Rivallain"
+APP_AUTHOR_EMAIL = "ludovic . rivallain @ gmail . com"
+APP_DESCRIPTION = "Track changes in Azure Docs articles"

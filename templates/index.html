@@ -15,8 +15,9 @@
   <thead>
     <tr>
       <th scope="col">File or folder</th>
+      <th scope="col" class="text-center">Last changes</th>
+      <th scope="col" class="text-center">RSS Feed</th>
       <th scope="col" class="text-center">Github</th>
-      <th scope="col" class="text-end">Last changes</th>
     </tr>
   </thead>
   <tbody>
@@ -24,13 +25,18 @@
     <tr tabindex="0">
       <td>{{ c.name }}</td>
       <td class="text-center">
-        <a href="{{ c.html_url }}" target="_blank" title="Look this file or folder on GitHub">
-          <i class="bi bi-github"></i>
-        </a>
-      </td>
-      <td class="text-end">
         <i class="bi bi-eye"></i>
         <a href="/articles/{{ c.name }}" title="Get last changes for this path">Last changes</a>
+      </td>
+      <td class="text-center">
+        <a href="/feed/articles/{{ c.name }}" title="Get last changes for this path" style="color:#fd7e14;" title="RSS Feed of the last changes for this section">
+          <i class="bi bi-rss"></i>
+        </a>
+      </td>
+      <td class="text-center">
+        <a href="{{ c.html_url }}" target="_blank" title="Look this file or folder on GitHub" style="color:#212529;">
+          <i class="bi bi-github"></i>
+        </a>
       </td>
     </tr>
     {% endfor %}
