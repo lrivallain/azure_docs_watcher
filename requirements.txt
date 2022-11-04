@@ -10,3 +10,5 @@ Flask-Login
 flask_dance
 # RSS
 feedgen
+# Caching
+cachetools

@@ -6,6 +6,7 @@ import logging
 import secrets
 from functools import wraps
 from markupsafe import escape
+from hashlib import sha256
 
 from flask import (
     Flask,
@@ -24,10 +25,12 @@ import coloredlogs
 from github import Github, Repository
 from github import UnknownObjectException, RateLimitExceededException
 from flask_dance.contrib.github import make_github_blueprint, github as gh_auth
+from cachetools import cached
+from cachetools.keys import hashkey
 
 # Import local configuration
 from config import *
-from utils import get_commits, get_feed
+from utils import get_commits, get_feed, cache, cache_home
 
 # configure logging
 log = logging.getLogger(__name__)
@@ -104,6 +107,35 @@ def logout():
     return redirect(url_for("home"))
 
 
+@cached(cache)
+def get_repo_contents(repo: Repository, path: str, cache_key: str) -> list:
+    """Get the content of a file in a GitHub repo.
+
+    Args:
+        repo (Repository): GitHub repo
+        path (str): path to the file
+        cache_key (str): key to use for the cache
+
+    Returns:
+        list: list of contents
+    """
+    return repo.get_dir_contents(path)
+
+
+@cached(cache, key=lambda *args, **kwargs: hashkey(kwargs["cache_key"]))
+def get_repo(g, cache_key: str) -> Repository:
+    """Get the content of a file in a GitHub repo.
+
+    Args:
+        g (g): Falsh global object
+        cache_key (str): key to use for the cache
+
+    Returns:
+        list: list of contents
+    """
+    return g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+
+
 @app.route("/")
 @login_suggested
 def home():
@@ -114,7 +146,7 @@ def home():
     """
     log.debug("Looking for repository %s/%s", AZURE_DOCS_OWNER, AZURE_DOCS_REPO)
     try:
-        repo = g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+        repo = get_repo(g, cache_key=f"repo-{sha256(g.gh_token.encode()).hexdigest()}")
     except UnknownObjectException:
         return Response("Repository not found", status=404)
     except RateLimitExceededException:
@@ -124,8 +156,10 @@ def home():
         return Response("Error while listing files and folders", status=500)
     log.debug("Listing files and folders in %s", AZURE_DOCS_ARTICLES_FOLDER_PREFIX)
     try:
-        contents = repo.get_dir_contents(
-            AZURE_DOCS_ARTICLES_FOLDER_PREFIX.lstrip("/").rstrip("/")
+        contents = get_repo_contents(
+            repo,
+            path=AZURE_DOCS_ARTICLES_FOLDER_PREFIX.lstrip("/").rstrip("/"),
+            cache_key=f"home-{sha256(g.gh_token.encode()).hexdigest()}",
         )
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
@@ -158,7 +192,7 @@ def track(folder: str):
     if not folder:
         return Response("Missing folder or file to like for changes", status=400)
     try:
-        repo = g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+        repo = get_repo(g, cache_key=f"repo-{sha256(g.gh_token.encode()).hexdigest()}")
     except UnknownObjectException:
         return Response("Repository not found", status=404)
     except Exception as e:
@@ -169,7 +203,11 @@ def track(folder: str):
 
     try:
         commits = get_commits(
-            repo, _folder_path, _since, shared_token=g.using_shared_gh
+            repo,
+            _folder_path,
+            _since,
+            shared_token=g.using_shared_gh,
+            cache_key=f"track-{sha256(g.gh_token.encode()).hexdigest()}",
         )
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
@@ -204,7 +242,7 @@ def feed(folder: str):
     if not folder:
         return Response("Missing folder or file to like for changes", status=400)
     try:
-        repo = g.gh.get_repo(f"{AZURE_DOCS_OWNER}/{AZURE_DOCS_REPO}")
+        repo = get_repo(g, cache_key=f"repo-{sha256(g.gh_token.encode()).hexdigest()}")
     except UnknownObjectException:
         return Response("Repository not found", status=404)
     except Exception as e:
@@ -215,7 +253,11 @@ def feed(folder: str):
 
     try:
         commits = get_commits(
-            repo, _folder_path, _since, shared_token=g.using_shared_gh
+            repo,
+            _folder_path,
+            _since,
+            shared_token=True,  # simulate a shared token usage to limit the length of the result
+            cache_key=f"track-{sha256(g.gh_token.encode()).hexdigest()}",
         )
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
@@ -227,6 +269,7 @@ def feed(folder: str):
 
 
 @app.route("/favicon.svg")
+@cached(cache)
 def favicon():
     """Serve the favicon.
 
