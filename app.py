@@ -152,7 +152,7 @@ def home():
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
     except Exception as e:
-        log.error(e)
+        log.error(e, e.__traceback__)
         return Response("Error while listing files and folders", status=500)
     log.debug("Listing files and folders in %s", AZURE_DOCS_ARTICLES_FOLDER_PREFIX)
     try:
@@ -164,7 +164,7 @@ def home():
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
     except Exception as e:
-        log.error(e)
+        log.error(e, e.__traceback__)
         return Response("Error while listing files and folders", status=500)
     return render_template(
         "index.html",
@@ -196,7 +196,7 @@ def track(folder: str):
     except UnknownObjectException:
         return Response("Repository not found", status=404)
     except Exception as e:
-        log.error(e)
+        log.error(e, e.__traceback__)
         return Response("Error while listing commits", status=500)
 
     _folder_path = os.path.join(AZURE_DOCS_ARTICLES_FOLDER_PREFIX, folder)
@@ -212,7 +212,7 @@ def track(folder: str):
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
     except Exception as e:
-        log.error(e)
+        log.error(e, e.__traceback__)
         return Response("Error while listing commits", status=500)
 
     return render_template(
@@ -246,7 +246,7 @@ def feed(folder: str):
     except UnknownObjectException:
         return Response("Repository not found", status=404)
     except Exception as e:
-        log.error(e)
+        log.error(e, e.__traceback__)
         return Response("Error while listing commits", status=500)
     log.debug("Listing commits in %s", folder)
     _folder_path = os.path.join(AZURE_DOCS_ARTICLES_FOLDER_PREFIX, folder)
@@ -262,7 +262,7 @@ def feed(folder: str):
     except RateLimitExceededException:
         return Response("Rate limit exceeded", status=429)
     except Exception as e:
-        log.error(e)
+        log.error(e, e.__traceback__)
         return Response("Error while listing commits", status=500)
 
     return Response(get_feed(commits, folder), mimetype="text/xml")

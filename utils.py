@@ -55,7 +55,7 @@ def get_commits(
             ret_commits.append(
                 {
                     "sha": escape(commit.sha[:7]),
-                    "author": escape(commit.author.name),
+                    "author": escape(commit.commit.author.name),
                     "commit": escape(commit.commit),
                     "url": escape(commit.html_url),
                     "message": escape(commit.commit.message),

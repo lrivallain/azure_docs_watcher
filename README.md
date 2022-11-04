@@ -16,7 +16,7 @@ Watch changes in the Azure docs repository.
 
 # Known issues
 
-## SAML enforcement policies
+## #10 - SAML enforcement policies
 
 Some user within organizations with SAML enforcement policies may have issues with the GitHub oAuth login.
 
