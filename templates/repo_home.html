@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ repository.display_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ repository.display_name }}</li>
+  </ol>
+</nav>
+<div class="row mb-3">
+  <div class="col-1 text-center p-3">
+    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository" style="width:100%;">
+  </div>
+  <div class="col">
+    <h2>
+      {{ repository.owner }}/{{ repository.repository }}
+      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank">
+        <i class="bi bi-link-45deg"></i></a>
+      <a href="/feed/{{ repository.name }}"
+        style="color:#fd7e14;" title="RSS Feed of the last changes for this repository">
+        <i class="bi bi-rss"></i></a>
+    </h2>
+    <p class="lead">
+      This website provides an insight on the last changes made on
+      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank">
+        {{ repository.owner }}/{{ repository.repository }} GitHub repository
+      </a> in the main branch over the last {{ since }} days.
+    </p>
+  </div>
+</div>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">File or folder <small class="text-muted" style="font-weight: normal;">({{ contents|length }})</small></th>
+      <th scope="col" class="text-center">Last changes</th>
+      <th scope="col" class="text-center">RSS Feed</th>
+      <th scope="col" class="text-center">Github</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in contents %}
+    <tr tabindex="0">
+      <td>{{ c.name }}</td>
+      <td class="text-center">
+        <i class="bi bi-eye"></i>
+        <a href="/{{ repository.name }}/{{ c.name }}" title="Get last changes for this path">
+          Last changes
+        </a>
+      </td>
+      <td class="text-center">
+        <a href="/feed/{{ repository.name }}/{{ c.name }}" title="Get last changes for this path"
+          style="color:#fd7e14;" title="RSS Feed of the last changes for this section">
+          <i class="bi bi-rss"></i>
+        </a>
+      </td>
+      <td class="text-center">
+        <a href="{{ c.html_url }}" target="_blank" title="Look this file or folder on GitHub"
+          style="color:#212529;">
+          <i class="bi bi-github"></i>
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</main>
+{% endblock %}

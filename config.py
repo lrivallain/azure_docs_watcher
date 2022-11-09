@@ -3,11 +3,10 @@
 
 import os
 
-
 # App details
 APP_AUTHOR = "Ludovic Rivallain"
 APP_AUTHOR_EMAIL = "ludovic . rivallain @ gmail . com"
-APP_DESCRIPTION = "Track changes in Azure Docs articles"
+APP_DESCRIPTION = "Track changes in __repo__ documentation articles"
 
 # Performances limits
 SINCE = int(os.getenv("AZDOCSWATCH_SINCE", 5))
@@ -30,3 +29,30 @@ AZURE_DOCS_ARTICLES_FOLDER_PREFIX = "/articles/"
 GITHUB_ACCESS_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
 if not GITHUB_ACCESS_TOKEN:
     raise Exception("GITHUB_ACCESS_TOKEN environment variable is not set")
+
+AZURE_DOCS_REPOS = {
+    "azure-docs": {
+        "name": "azure-docs",
+        "display_name": "Azure Docs",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-docs",
+        "articles_folder": "/articles/",
+        "icon": "azure-icons/Azure.svg",
+    },
+    "azure-sql": {
+        "name": "azure-sql",
+        "display_name": "Azure SQL",
+        "owner": "MicrosoftDocs",
+        "repository": "sql-docs",
+        "articles_folder": "/azure-sql/",
+        "icon": "azure-icons/Azure-SQL.svg",
+    },
+    "azure-quantum": {
+        "name": "azure-quantum",
+        "display_name": "Azure Quantum (preview)",
+        "owner": "MicrosoftDocs",
+        "repository": "quantum-docs",
+        "articles_folder": "/articles/",
+        "icon": "azure-icons/Azure-Quantum.svg",
+    },
+}
