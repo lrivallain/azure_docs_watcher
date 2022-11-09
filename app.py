@@ -55,7 +55,12 @@ def home():
     repos_list = []
     for repo in AZURE_DOCS_REPOS:
         repos_list.append(AZURE_DOCS_REPOS[repo])
-    return render_template("home.html", repos=repos_list)
+    return render_template(
+        "home.html",
+        repos=repos_list,
+        since=SINCE,
+        max_commits=MAX_COMMITS,
+    )
 
 
 @app.route("/<repo>")
