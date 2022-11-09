@@ -1,24 +1,40 @@
 {% extends "base.html" %}
 {% block title %}{{ folder }}{% endblock %}
 {% block content %}
-<h2>
-  {{ owner }}/{{ repository }}{{ folder }}
-  <a href="https://github.com/{{ owner }}/{{ repository }}/tree/main/{{ folder }}" target="_blank"
-    title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
-  <a href="/feed{{ folder }}" title="Get last changes for this path" style="color:#fd7e14;"
-    title="RSS Feed of the last changes for this section"><i class="bi bi-rss"></i></a>
-</h2>
-<p class="lead">
-  {% if commits|length >= 1 %} Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}:
-  {% else %} No commit in the last {{ since }} days.
-  {% endif %}
-</p>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/{{ repository.name }}">{{ repository.display_name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ folder }}</li>
+  </ol>
+</nav>
+<div class="row mb-3">
+  <div class="col-1 text-center p-3">
+    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository" style="width:100%;">
+  </div>
+  <div class="col">
+    <h2>
+      {{ repository.owner }}/{{ repository.repository }}{{ repository.articles_folder}}{{ folder }}
+      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}/tree/main{{ repository.articles_folder}}{{ folder }}"
+        target="_blank" title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
+      <a href="/feed/{{ repository.name }}/{{ folder }}"
+        style="color:#fd7e14;" title="RSS Feed of the last changes for this section">
+        <i class="bi bi-rss"></i></a>
+    </h2>
+    <p class="lead">
+      {% if commits|length >= 1 %}
+        Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}:
+      {% else %} No commit in the last {{ since }} days.
+      {% endif %}
+    </p>
+  </div>
+</div>
 <div class="row row-cols-auto">
   {% for commit in commits %}
   <div class="col mb-3 col-12 col-md-4">
     <div class="card text-bg-light h-100">
       <h5 class="card-header">
-        {{ commit.sha }}
+        <i class="bi bi-git"></i> {{ commit.sha }}
       </h5>
       <div class="card-body">
         <figure>
@@ -31,7 +47,9 @@
         </figure>
       </div>
       <div class="card-footer text-center">
-        <a href="{{ commit.url }}" target="_blank"><i class="bi bi-github"></i> View commit</a>
+        <a href="{{ commit.url }}" target="_blank">
+          <i class="bi bi-github"></i> View commit
+        </a>
       </div>
     </div>
   </div>

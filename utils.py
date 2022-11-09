@@ -65,12 +65,13 @@ def get_commits(
     return ret_commits
 
 
-def get_feed(commits: list, folder: str) -> str:
+def get_feed(commits: list, folder: str, repo: dict) -> str:
     """Get the RSS feed for the given commits
 
     Args:
         commits (list): list of commits
         folder (str): folder to track
+        repo (dict): GitHub repo from configuration
 
     Returns:
         str: RSS feed
@@ -78,14 +79,14 @@ def get_feed(commits: list, folder: str) -> str:
     log.debug("Generating RSS feed")
     fg = FeedGenerator()
     fg.id(request.base_url)
-    fg.title(f"Azure Docs changes in section '{folder}'")
+    fg.title(f"{repo.get('display_name')} changes in section '{folder}'")
     fg.author({"name": APP_AUTHOR, "email": APP_AUTHOR_EMAIL})
     fg.link(
         href=request.base_url,
         rel="alternate",
     )
-    fg.logo(url_for("static", filename="favicon.svg", _external=True))
-    fg.subtitle(APP_DESCRIPTION)
+    fg.logo(url_for("static", filename=repo.get("icon"), _external=True))
+    fg.subtitle(APP_DESCRIPTION.replace("__repo__", repo.get("display_name")))
     fg.link(
         href=request.base_url,
         rel="self",

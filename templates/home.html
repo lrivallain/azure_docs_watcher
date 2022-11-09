@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Home</li>
+  </ol>
+</nav>
+<h2>
+  Azure Docs changes watcher
+</h2>
+<p class="lead">
+  Select a repository to list the content and watch for last documentation changes.
+</p>
+<div class="row row-cols-auto">
+  {% for repository in repos %}
+  <div class="col mb-3 col-12 col-md-4">
+    <div class="card text-bg-light h-100 shadow">
+      <a href="/{{ repository.name }}" title="List the content and watch for last documentation changes">
+        <img src="{{ url_for('static', filename=repository.icon) }}" class="card-img-top img-fluid" alt="Icon of {{ repository.display_name }} repository" style="max-height:8rem;">
+      </a>
+      <div class="card-body">
+        <h5 class="card-title">{{ repository.display_name }}</h5>
+        <p class="card-text">
+          <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
+            title="Visit the repository on GitHub">
+            <i class="bi bi-github"></i>
+            {{ repository.owner }}/{{ repository.repository }}
+          </a>
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="row">
+          <div class="col">
+            <a href="/{{ repository.name }}" class="btn btn-primary">View content</a>
+          </div>
+          <div class="col text-end">
+            <a href="/feed/{{ repository.name }}" class="btn"
+            style="color:#fd7e14; padding: 0px;" title="RSS Feed of the last changes for this repository">
+            <i class="bi bi-rss h3"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</table>
+</main>
+{% endblock %}

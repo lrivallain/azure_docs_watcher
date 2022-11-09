@@ -8,7 +8,10 @@ Watch changes in the Azure docs repository.
 
 # Features
 
-* List Azure docs articles
+* List Azure docs articles for some repositories:
+  * [Azure Docs](https://github.com/MicrosoftDocs/azure-docs)
+  * [Azure SQL](https://github.com/MicrosoftDocs/sql-docs)
+  * [Azure Quantum](https://github.com/MicrosoftDocs/quantum-docs)
 * See the last changes in the Azure docs repository for a specific service/section
 * Use a GitHub oAuth token to increase the rate limit and the number of results
 * RSS feed for each section (#7)
