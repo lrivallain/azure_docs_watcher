@@ -55,4 +55,12 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure-Quantum.svg",
     },
+    "azure_docs_watcher": {
+        "name": "azure_docs_watcher",
+        "display_name": "Azure Docs Watcher",
+        "owner": "lrivallain",
+        "repository": "azure_docs_watcher",
+        "articles_folder": "",
+        "icon": "favicon.svg",
+    },
 }
