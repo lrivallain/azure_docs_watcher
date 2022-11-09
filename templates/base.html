@@ -39,9 +39,25 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarText">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/" title="Go to home page"><i
-                  class="bi bi-house-door"></i></a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-question-circle"></i>
+              </a>
+              <ul class="dropdown-menu">
+                <li class="nav-item">
+                  <a class="dropdown-item" href="/" title="Go to home page"><i
+                      class="bi bi-house-door"></i> Home</a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="https://github.com/lrivallain/azure_docs_watcher"
+                    title="About" target="_blank">
+                    <i class="bi bi-github"></i> About</a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="https://github.com/lrivallain/azure_docs_watcher/issues/new/choose"
+                    title="Report issue" target="_blank">
+                    <i class="bi bi-bug"></i> Report issue</a></li>
+              </ul>
             </li>
             {% if session.username %}
             <li class="nav-item dropdown">
@@ -87,15 +103,19 @@
       <div class="col-md-4 d-flex align-items-center">
         <a href="https://github.com/lrivallain/azure_docs_watcher" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
           title="Source code on GitHub">
-          <i class="bi bi-github"></i> Github
+          <i class="bi bi-github"></i>
         </a>
         <a href="https://getbootstrap.com/" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
           title="UI components are based on Boostrap framework">
-          <i class="bi bi-bootstrap"></i> Boostrap
+          <i class="bi bi-bootstrap"></i>
+        </a>
+        <a href="https://mastodon.social/@lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+          title="Mastodon account for @lrivallain@mastodon.social">
+          <i class="bi bi-mastodon"></i>
         </a>
         <a href="https://twitter.com/lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
           title="Twitter account for @lrivallain">
-          <i class="bi bi-twitter"></i> @lrivallain
+          <i class="bi bi-twitter"></i>
         </a>
       </div>
     </footer>
