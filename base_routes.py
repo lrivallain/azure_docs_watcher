@@ -2,10 +2,19 @@ import logging
 import secrets
 import os
 
-from flask import Flask, redirect, session, url_for, send_from_directory
+from flask import (
+    Flask,
+    redirect,
+    session,
+    url_for,
+    send_from_directory,
+    render_template,
+)
+from werkzeug.exceptions import HTTPException
 from cachetools import cached
 
 app = Flask(__name__, static_folder="static")
+app.url_map.strict_slashes = False
 app.secret_key = secrets.token_hex()
 
 # Import local configuration
@@ -45,3 +54,16 @@ def logout():
     """
     session.clear()
     return redirect(url_for("home"))
+
+
+@app.errorhandler(HTTPException)
+def resource_not_found(e):
+    log.error(f"{e.code}: {str(e.description)}")
+    return (
+        render_template(
+            "error.html",
+            error_code=e.code,
+            error_message=e.description,
+        ),
+        e.code,
+    )

@@ -31,32 +31,32 @@ if not GITHUB_ACCESS_TOKEN:
     raise Exception("GITHUB_ACCESS_TOKEN environment variable is not set")
 
 AZURE_DOCS_REPOS = {
-    "azure-docs": {
-        "name": "azure-docs",
+    "MicrosoftDocs/azure-docs": {
+        "name": "MicrosoftDocs/azure-docs",
         "display_name": "Azure Docs",
         "owner": "MicrosoftDocs",
         "repository": "azure-docs",
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure.svg",
     },
-    "azure-sql": {
-        "name": "azure-sql",
+    "MicrosoftDocs/azure-sql": {
+        "name": "MicrosoftDocs/azure-sql",
         "display_name": "Azure SQL",
         "owner": "MicrosoftDocs",
         "repository": "sql-docs",
         "articles_folder": "/azure-sql/",
         "icon": "azure-icons/Azure-SQL.svg",
     },
-    "azure-quantum": {
-        "name": "azure-quantum",
+    "MicrosoftDocs/azure-quantum": {
+        "name": "MicrosoftDocs/azure-quantum",
         "display_name": "Azure Quantum (preview)",
         "owner": "MicrosoftDocs",
         "repository": "quantum-docs",
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure-Quantum.svg",
     },
-    "azure_docs_watcher": {
-        "name": "azure_docs_watcher",
+    "lrivallain/azure_docs_watcher": {
+        "name": "lrivallain/azure_docs_watcher",
         "display_name": "Azure Docs Watcher",
         "owner": "lrivallain",
         "repository": "azure_docs_watcher",

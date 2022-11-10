@@ -44,7 +44,55 @@
     </div>
   </div>
   {% endfor %}
+  <div class="col mb-3 col-12 col-md-4">
+    <div class="card text-bg-light h-100 shadow">
+      <div class="card-header">
+        <h5>Custom repository</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning" role="alert" id="javascriptNeededWarning">
+          Javascript is required to use this feature.
+        </div>
+        <div class="input-group">
+          <span class="input-group-text" id="customRepositoryHelp">https://github.com/</span>
+          <input type="text" class="form-control" id="customRepository" aria-describedby="customRepositoryHelp"
+          placeholder="MicrosoftDocs/azure-docs">
+          <div id="customRepositoryHelp" class="form-text">Enter the GitHub repository URI to see the content</div>
+        </div>
+        <script>
+          window.addEventListener('load', (event) => {
+            $( "#customRepository" ).on( "input", function() {
+              var customRepository = String($(this).val());
+              if (customRepository.length > 0) {
+                // remove leading part of the URI if needed
+                if (customRepository.startsWith("https://github.com/")) {
+                  customRepository = customRepository.replace("https://github.com/", "");
+                  $(this).val(customRepository);
+                }
+              }
+              console.debug("Updating custom repository link herf to /" + $(this).val());
+              $( "#customRepositoryButton" ).attr("href", "/" + $(this).val());
+            });
+            // If the user press enter, redirect to the repository content
+            $("#customRepository").on("keydown", function(event) {
+              if(event.which == 13)
+                location.href = $( "#customRepositoryButton" ).attr("href");
+            });
+            // disable the javascript warning if javascript is enabled
+            $( "#javascriptNeededWarning" ).hide();
+            //  Triggering input event to update link herf based on previous value
+            $( "#customRepository" ).trigger( "input" );
+          });
+        </script>
+      </div>
+      <div class="card-footer">
+        <div class="row">
+          <div class="col">
+            <a href="#" class="btn btn-primary" id="customRepositoryButton">View content</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-</table>
-</main>
 {% endblock %}

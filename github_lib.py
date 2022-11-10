@@ -1,14 +1,16 @@
 import logging
 from functools import wraps
 
-from flask import g, redirect, session, url_for
+from flask import g, redirect, session, url_for, abort
 from flask_dance.contrib.github import github as gh_auth
 from cachetools import cached
 from cachetools.keys import hashkey
 from github import Github, Repository
+from github import UnknownObjectException, RateLimitExceededException
 
 from utils import cache
 from config import GITHUB_ACCESS_TOKEN
+from base_routes import app
 
 # configure logging
 log = logging.getLogger(__name__)
@@ -26,7 +28,14 @@ def get_repo_contents(repo: Repository, path: str, cache_key: str) -> list:
     Returns:
         list: list of contents
     """
-    return repo.get_dir_contents(path)
+    log.debug(f"Listing files and folders in {path}")
+    try:
+        return repo.get_dir_contents(path)
+    except RateLimitExceededException:
+        abort(429, "Rate limit exceeded")
+    except Exception as e:
+        log.error(e, e.__traceback__)
+        abort(500, "Error while listing files and folders")
 
 
 @cached(cache, key=lambda *args, **kwargs: hashkey(kwargs["cache_key"]))
@@ -41,7 +50,13 @@ def get_repo(g, config_repo: dict, cache_key: str) -> Repository:
     Returns:
         list: list of contents
     """
-    return g.gh.get_repo(f"{config_repo['owner']}/{config_repo['repository']}")
+    try:
+        return g.gh.get_repo(f"{config_repo['owner']}/{config_repo['repository']}")
+    except UnknownObjectException:
+        abort(404, description="Repository not found on GitHub")
+    except Exception as e:
+        log.error(e, e.__traceback__)
+        abort(500, description="Error while listing commits")
 
 
 def login_management(f):

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Error: {{ error_code }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+  </ol>
+</nav>
+<div class="alert alert-danger" role="alert">
+  <h4 class="alert-heading">Error: {{ error_code }}</h4>
+  {{ error_message }}
+  <hr>
+  <p class="mb-0">If you think this is a bug, please
+    <a href="https://github.com/lrivallain/azure_docs_watcher/issues/new/choose"
+      title="Report issue" target="_blank" class="alert-link">
+      <i class="bi bi-bug"></i> report an issue</a>.
+  </p>
+  <p>
+    Otherwise, please <a href="/" title="Go to home page" class="alert-link">go back to home page</a>.
+  </p>
+</div>
+{% endblock %}
