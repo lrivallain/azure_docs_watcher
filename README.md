@@ -17,6 +17,7 @@ Watch changes in the Azure docs repository.
 * Use a GitHub oAuth token to increase the rate limit and the number of results
 * RSS feed for each section (#7)
 * Cache capabilities are used to reduce the number of API calls to GitHub and improve performance (#9)
+* Light/dark theme (#19)
 
 # Known issues
 

@@ -3,10 +3,11 @@
 ## 1.2.0 (2021-11-10)
 
 * Support for custom repositories tracking (#17)
+* Light/dark theme (#19)
 
 ## 1.1.0 (2021-11-09)
 
-* Multi-repository support (Azure Docs, Azure SQL, Azure Quantum)
+* Multi-repository support (Azure Docs, Azure SQL, Azure Quantum) (#15)
 * Review home page
 * Navigation breadcrumb
 
