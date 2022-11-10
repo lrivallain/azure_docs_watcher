@@ -9,13 +9,15 @@
   </ol>
 </nav>
 <div class="row mb-3">
+  {% if repository.icon %}
   <div class="col-1 text-center p-3">
     <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository" style="width:100%;">
   </div>
+  {% endif %}
   <div class="col">
     <h2>
       {{ repository.owner }}/{{ repository.repository }}{{ repository.articles_folder}}{{ folder }}
-      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}/tree/main{{ repository.articles_folder}}{{ folder }}"
+      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}"
         target="_blank" title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
       <a href="/feed/{{ repository.name }}/{{ folder }}"
         style="color:#fd7e14;" title="RSS Feed of the last changes for this section">

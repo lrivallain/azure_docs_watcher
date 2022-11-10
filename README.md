@@ -12,6 +12,7 @@ Watch changes in the Azure docs repository.
   * [Azure Docs](https://github.com/MicrosoftDocs/azure-docs)
   * [Azure SQL](https://github.com/MicrosoftDocs/sql-docs)
   * [Azure Quantum](https://github.com/MicrosoftDocs/quantum-docs)
+* Support for custom repositories tracking (#17)
 * See the last changes in the Azure docs repository for a specific service/section
 * Use a GitHub oAuth token to increase the rate limit and the number of results
 * RSS feed for each section (#7)

@@ -99,7 +99,7 @@
             <li>Commits logs are retrieved over the last <strong>{{ since }} days</strong>.</li>
             <li>Only the last <strong>{{ max_commits }} commits</strong> are retrieved over this period.</li>
           </ul>
-          <p>You can <a href="/login" title="Login">login with a GitHub account</a> to bypass the last limit.</p>
+          <p>You can <a href="/login" title="Login" class="alert-link">login with a GitHub account</a> to bypass the last limit.</p>
         </div>
       </div>
     </div>
@@ -109,24 +109,32 @@
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 px-3 my-4 border-top">
-      <div class="col-md-4 d-flex align-items-center">
-        <a href="https://github.com/lrivallain/azure_docs_watcher" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-          title="Source code on GitHub">
-          <i class="bi bi-github"></i>
-        </a>
-        <a href="https://getbootstrap.com/" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-          title="UI components are based on Boostrap framework">
-          <i class="bi bi-bootstrap"></i>
-        </a>
-        <a href="https://mastodon.social/@lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-          title="Mastodon account for @lrivallain@mastodon.social">
-          <i class="bi bi-mastodon"></i>
-        </a>
-        <a href="https://twitter.com/lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-          title="Twitter account for @lrivallain">
-          <i class="bi bi-twitter"></i>
-        </a>
+    <footer class="-lg px-lg-2 text-center py-3 px-3 my-4 border-top">
+      <div class="row gx-5">
+        <div class="col">
+          <a href="https://github.com/lrivallain/azure_docs_watcher" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+            title="Source code on GitHub">
+            <i class="bi bi-github"></i>
+          </a>
+        </div>
+        <div class="col">
+          <a href="https://getbootstrap.com/" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+            title="UI components are based on Boostrap framework">
+            <i class="bi bi-bootstrap"></i>
+          </a>
+        </div>
+        <div class="col">
+          <a href="https://mastodon.social/@lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+            title="Mastodon account for @lrivallain@mastodon.social">
+            <i class="bi bi-mastodon"></i>
+          </a>
+        </div>
+        <div class="col">
+          <a href="https://twitter.com/lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+            title="Twitter account for @lrivallain">
+            <i class="bi bi-twitter"></i>
+          </a>
+        </div>
       </div>
     </footer>
   </div>

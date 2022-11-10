@@ -12,3 +12,5 @@ flask_dance
 feedgen
 # Caching
 cachetools
+# Configuration
+python-dotenv

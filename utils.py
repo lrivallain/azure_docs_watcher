@@ -5,7 +5,8 @@ import logging
 from markupsafe import escape
 
 from github import Repository
-from flask import request, url_for
+from github import UnknownObjectException, RateLimitExceededException
+from flask import request, url_for, abort
 from feedgen.feed import FeedGenerator
 from cachetools import cached, TTLCache
 
@@ -18,6 +19,39 @@ cache_home = TTLCache(
 )  # 10 times longer than the other cache for the home page
 
 log = logging.getLogger(__name__)
+
+
+def get_repo_config(repo_owner: str = None, repo_name: str = None) -> dict:
+    """Get the configuration for a given repo.
+    If not configured, returns a faked configuration.
+
+    Args:
+        repo_owner (str, optional): GitHub repo owner. Defaults to None.
+        repo_name (str, optional): GitHub repo name. Defaults to None.
+        path (str, optional): Path to the file or folder. Defaults to "".
+
+    Returns:
+        dict: Repo configuration
+    """
+    log.debug(f"Getting repo configuration")
+    if not repo_owner and repo_name:
+        abort(400, "Missing repository owner or name")
+    repo_keyname = "/".join([repo_owner, repo_name])
+    log.debug(f"Looking for repository {repo_keyname} in configuration")
+    config_repo = AZURE_DOCS_REPOS.get(repo_keyname)
+    if not config_repo:
+        log.debug(
+            "Repository not found in configuration: format custom repository like a configured one"
+        )
+        config_repo = {
+            "name": repo_keyname,
+            "display_name": repo_keyname,
+            "owner": repo_owner,
+            "repository": repo_name,
+            "articles_folder": "/",
+            "icon": "",
+        }
+    return config_repo
 
 
 @cached(cache)
@@ -40,9 +74,19 @@ def get_commits(
     Returns:
         list: list of commits
     """
+    log.debug(f"Looking for commits in {section_path}")
+    # get commit for the root of the repo requires no prefix slash
+    if section_path == "/":
+        section_path = ""
     log.debug("Calculating the reference date")
     ref_date = datetime.datetime.now() - datetime.timedelta(days=since)
-    _commits = repo.get_commits(path=section_path, since=ref_date)
+    try:
+        _commits = repo.get_commits(path=section_path, since=ref_date)
+    except RateLimitExceededException:
+        return abort(429, "Rate limit exceeded")
+    except Exception as e:
+        log.error(e, e.__traceback__)
+        return abort(500, "Error while listing commits")
 
     log.debug(f"{_commits.totalCount} commits found in the last {since} days")
     # Converting a limited list of commits
@@ -51,17 +95,21 @@ def get_commits(
         if _commits.totalCount > MAX_COMMITS and shared_token:
             log.info("Using shared Github client: limiting commits to %s", MAX_COMMITS)
             _commits = _commits[:MAX_COMMITS]
-        for commit in _commits:
-            ret_commits.append(
-                {
-                    "sha": escape(commit.sha[:7]),
-                    "author": escape(commit.commit.author.name),
-                    "commit": escape(commit.commit),
-                    "url": escape(commit.html_url),
-                    "message": escape(commit.commit.message),
-                    "date": commit.commit.author.date,
-                }
-            )
+        try:
+            for commit in _commits:
+                ret_commits.append(
+                    {
+                        "sha": escape(commit.sha[:7]),
+                        "author": escape(commit.commit.author.name),
+                        "commit": escape(commit.commit),
+                        "url": escape(commit.html_url),
+                        "message": escape(commit.commit.message),
+                        "date": commit.commit.author.date,
+                    }
+                )
+        except Exception as e:
+            log.error(e, e.__traceback__)
+            return abort(500, "Error while formatting commits")
     return ret_commits
 
 

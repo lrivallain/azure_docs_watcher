@@ -8,9 +8,11 @@
   </ol>
 </nav>
 <div class="row mb-3">
+  {% if repository.icon %}
   <div class="col-1 text-center p-3">
     <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository" style="width:100%;">
   </div>
+  {% endif %}
   <div class="col">
     <h2>
       {{ repository.owner }}/{{ repository.repository }}
