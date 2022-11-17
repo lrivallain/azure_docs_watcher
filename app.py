@@ -11,6 +11,7 @@ from flask import (
     request,
     g,
     jsonify,
+    redirect,
 )
 from werkzeug.middleware.proxy_fix import (
     ProxyFix,
@@ -47,6 +48,12 @@ def home():
     Returns:
         flask.render_template: Home page
     """
+    # Manage a redirect from the lasted viewed page when logging in or out
+    if session.get("next"):
+        log.debug(f"Redirecting to {session.get('next')}")
+        next_url = session.get("next")
+        session.pop("next", None)
+        return redirect(next_url, code=302)
     log.debug("Rendering home page")
     repos_list = []
     for repo in AZURE_DOCS_REPOS:

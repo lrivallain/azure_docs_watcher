@@ -6,6 +6,7 @@ from flask import (
     Flask,
     redirect,
     session,
+    request,
     url_for,
     send_from_directory,
     render_template,
@@ -39,7 +40,11 @@ def login():
     """Login route.
 
     Redirects to GitHub login page.
+
+    Returns:
+        flask.redirect: Redirect to the GitHub login page
     """
+    session["next"] = request.referrer
     return redirect(url_for("github.login"))
 
 
@@ -53,20 +58,8 @@ def logout():
         flask.redirect: Redirect to the home page
     """
     session.clear()
+    session["next"] = request.referrer
     return redirect(url_for("home"))
-
-
-@app.errorhandler(HTTPException)
-def resource_not_found(e):
-    log.error(f"{e.code}: {str(e.description)}")
-    return (
-        render_template(
-            "error.html",
-            error_code=e.code,
-            error_message=e.description,
-        ),
-        e.code,
-    )
 
 
 # Issue: #21 : favicon for RSS feed
