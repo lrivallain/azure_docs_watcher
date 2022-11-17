@@ -10,19 +10,25 @@
 <div class="row mb-3">
   {% if repository.icon %}
   <div class="col-1 text-center p-3">
-    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository" style="width:100%;">
+    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository"
+      style="width:100%;">
   </div>
   {% endif %}
   <div class="col">
     <h2>
       {{ repository.owner }}/{{ repository.repository }}
-      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank">
-        <i class="bi bi-link-45deg"></i></a>
-      <a href="/feed/{{ repository.name }}"
-        style="color:#fd7e14;" title="RSS Feed of the last changes for this repository">
-        <i class="bi bi-rss"></i></a>
     </h2>
-    <p class="lead">
+    <div class="btn-group btn-group-sm mt-1" role="group" aria-label="Actions">
+      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
+        title="View this repository on GitHub" class="btn btn-outline-primary">
+        <i class="bi bi-github"></i> View on GitHub</a>
+      <a href="/feed/{{ repository.name }}" title="RSS Feed of the last changes for this repository"
+        class="btn btn-outline-primary">
+        <i class="bi bi-rss" style="color:#fd7e14;"></i> RSS Feed</a>
+      <a href="/api/{{ repository.name }}" title="View the result as JSON formatted" class="btn btn-outline-primary">
+        <i class="bi bi-filetype-json"></i> View as JSON</a>
+    </div>
+    <p class="lead mt-2">
       This website provides an insight on the last changes made on
       <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank">
         {{ repository.owner }}/{{ repository.repository }} GitHub repository
@@ -33,9 +39,11 @@
 <table class="table table-hover">
   <thead>
     <tr>
-      <th scope="col">File or folder <small class="text-muted" style="font-weight: normal;">({{ contents|length }})</small></th>
+      <th scope="col">File or folder <small class="text-muted" style="font-weight: normal;">({{ contents|length
+          }})</small></th>
       <th scope="col" class="text-center">Last changes</th>
       <th scope="col" class="text-center">RSS Feed</th>
+      <th scope="col" class="text-center">JSON</th>
       <th scope="col" class="text-center">Github</th>
     </tr>
   </thead>
@@ -50,9 +58,15 @@
         </a>
       </td>
       <td class="text-center">
-        <a href="/feed/{{ repository.name }}/{{ c.name }}" title="Get last changes for this path"
-          style="color:#fd7e14;" title="RSS Feed of the last changes for this section">
+        <a href="/feed/{{ repository.name }}/{{ c.name }}" title="Get last changes for this path" style="color:#fd7e14;"
+          title="RSS Feed of the last changes for this section">
           <i class="bi bi-rss"></i>
+        </a>
+      </td>
+      <td class="text-center">
+        <a href="/api/{{ repository.name }}/{{ c.name }}" title="Get last changes for this path as JSON"
+          title="JSON of the last changes for this section">
+          <i class="bi bi-filetype-json"></i>
         </a>
       </td>
       <td class="text-center">

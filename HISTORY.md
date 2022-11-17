@@ -1,5 +1,9 @@
 # History
 
+## 1.3.0 (2021-11-17)
+
+* JSON outputs for API consumption (#23)
+
 ## 1.2.0 (2021-11-10)
 
 * Support for custom repositories tracking (#17)
