@@ -5,7 +5,6 @@ import logging
 from markupsafe import escape
 
 from github import Repository
-from github import UnknownObjectException, RateLimitExceededException
 from flask import request, url_for, abort
 from feedgen.feed import FeedGenerator
 from cachetools import cached, TTLCache
