@@ -1,26 +1,21 @@
 """Main module."""
 
 import os
-import datetime
 import logging
 from markupsafe import escape
 from hashlib import sha256
 
 from flask import (
-    Flask,
     render_template,
     Response,
     request,
     g,
-    abort,
+    jsonify,
 )
 from werkzeug.middleware.proxy_fix import (
     ProxyFix,
 )  # https://flask.palletsprojects.com/en/latest/deploying/proxy_fix/
 import coloredlogs
-from github import UnknownObjectException, RateLimitExceededException
-from cachetools import cached
-from cachetools.keys import hashkey
 
 # Import local configuration
 from config import *
@@ -171,7 +166,7 @@ def repo_feed(repo_owner: str, repo_name: str):
 
 @app.route("/feed/<repo_owner>/<repo_name>/<path:folder>")
 @login_management
-def feed(repo_owner: str, repo_name: str, folder: str):
+def section_feed(repo_owner: str, repo_name: str, folder: str):
     """RSS Feed of commits in a folder of the repository
 
     Args:
@@ -199,3 +194,64 @@ def feed(repo_owner: str, repo_name: str, folder: str):
         cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
     )
     return Response(get_feed(commits, folder, config_repo), mimetype="text/xml")
+
+
+@app.route("/api/<repo_owner>/<repo_name>")
+@login_management
+def repo_api(repo_owner: str, repo_name: str):
+    """RSS Feed of commits in the repository
+
+    Args:
+        repo_owner (str): GitHub repo owner.
+        repo_name (str): GitHub repo name.
+
+    Returns:
+        str: rss feed
+    """
+    _since = int(request.args.get("since", SINCE))
+    config_repo = get_repo_config(repo_owner, repo_name)
+    repo = get_repo(
+        g,
+        config_repo=config_repo,
+        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
+    )
+    commits = get_commits(
+        repo,
+        config_repo.get("articles_folder"),
+        _since,
+        shared_token=True,  # simulate a shared token usage to limit the length of the result
+        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
+    )
+    return jsonify(commits)
+
+
+@app.route("/api/<repo_owner>/<repo_name>/<path:folder>")
+@login_management
+def section_api(repo_owner: str, repo_name: str, folder: str):
+    """RSS Feed of commits in a folder of the repository
+
+    Args:
+        repo_owner (str): GitHub repo owner.
+        repo_name (str): GitHub repo name.
+        folder (str): section to track
+
+    Returns:
+        str: rss feed
+    """
+    _since = int(request.args.get("since", SINCE))
+    config_repo = get_repo_config(repo_owner, repo_name)
+    repo = get_repo(
+        g,
+        config_repo=config_repo,
+        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
+    )
+
+    _folder_path = os.path.join(config_repo.get("articles_folder"), folder.lstrip("/"))
+    commits = get_commits(
+        repo,
+        _folder_path,
+        _since,
+        shared_token=True,  # simulate a shared token usage to limit the length of the result
+        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
+    )
+    return jsonify(commits)

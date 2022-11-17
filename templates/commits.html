@@ -11,24 +11,29 @@
 <div class="row mb-3">
   {% if repository.icon %}
   <div class="col-1 text-center p-3">
-    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository" style="width:100%;">
+    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository"
+      style="width:100%;">
   </div>
   {% endif %}
   <div class="col">
     <h2>
       {{ repository.owner }}/{{ repository.repository }}{{ repository.articles_folder}}{{ folder }}
-      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}"
-        target="_blank" title="View this path on GitHub"><i class="bi bi-link-45deg"></i></a>
-      <a href="/feed/{{ repository.name }}/{{ folder }}"
-        style="color:#fd7e14;" title="RSS Feed of the last changes for this section">
-        <i class="bi bi-rss"></i></a>
     </h2>
-    <p class="lead">
+    <div class="btn-group btn-group-sm mt-1" role="group" aria-label="Actions">
+      <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
+        title="View this path on GitHub" class="btn btn-outline-primary">
+        <i class="bi bi-github"></i> View on GitHub</a>
+      <a href="/feed/{{ repository.name }}/{{ folder }}" title="RSS Feed of the last changes for this section"
+        class="btn btn-outline-primary">
+        <i class="bi bi-rss" style="color:#fd7e14;"></i> RSS Feed</a>
+      <a href="/api/{{ repository.name }}/{{ folder }}" title="View the result as JSON formatted"
+        class="btn btn-outline-primary">
+        <i class="bi bi-filetype-json"></i> View as JSON</a>
+    </div>
+    <p class="lead mt-2">
       {% if commits|length >= 1 %}
-        Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}:
-      {% else %} No commit in the last {{ since }} days.
-      {% endif %}
-    </p>
+      Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}: {%
+        else %} No commit in the last {{ since }} days. {% endif %} </p>
   </div>
 </div>
 <div class="row row-cols-auto">
