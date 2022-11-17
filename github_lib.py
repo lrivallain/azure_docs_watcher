@@ -9,31 +9,12 @@ from github import Github, Repository
 from github import UnknownObjectException, RateLimitExceededException, GithubException
 
 from utils import cache
+from errors import SAML403
 from config import GITHUB_ACCESS_TOKEN
 from base_routes import app
 
 # configure logging
 log = logging.getLogger(__name__)
-
-
-class SAML403(Exception):
-    def __init__(self, repository):
-        self.repository = repository
-
-
-@app.errorhandler(SAML403)
-def saml403(e):
-    """Error handler for SAML403 exceptions.
-
-    Args:
-        e (SAML403): Exception
-
-    Returns:
-        flask.render_template: Error page
-    """
-    log.warning(f"SAML enforcement error. A specific error page is displayed.")
-    log.debug(f"Repository: {e.repository.get('owner')}/{e.repository.get('name')}")
-    return render_template("error_saml.html", repository=e.repository), 403
 
 
 @cached(cache)
