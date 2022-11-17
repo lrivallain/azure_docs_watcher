@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}SAML enforcement: Renew is required.{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+  </ol>
+</nav>
+<div class="alert alert-info" role="alert">
+  <h4 class="alert-heading">SAML enforcement: Renew is required.</h4>
+  <p>The requested resource is protected by organization SAML enforcement.</p>
+  <p>Your SAML session may have expired.</p>
+  <hr>
+  <h5><i class="bi bi-lightbulb"></i> How to fix this ?</h5>
+  <ol>
+    <li class="mb-2">Click on the button below to renew your SAML session:</li>
+    <p><a href="https://github.com/{{ repository.owner }}" target="_blank" class="btn btn-success">
+        <i class="bi bi-github"></i> GitHub organization</a>
+    </p>
+    <li class="mb-2">Once your SAML session is renewed, logout:</li>
+    <p><a href="/logout" target="_blank" class="btn btn-warning" title="Logout">
+        <i class="bi bi-box-arrow-right"></i> Logout</a>
+    </p>
+    <li class="mb-2">Login again:</li>
+    <p><a href="/login" class="btn btn-success" title="Login">
+        <i class="bi-box-arrow-in-right"></i> Login</a>
+    </p>
+    <hr>
+    <p class="mb-0">If you think this is a bug, please
+      <a href="https://github.com/lrivallain/azure_docs_watcher/issues/new/choose" title="Report issue" target="_blank"
+        class="alert-link">
+        <i class="bi bi-bug"></i> report an issue</a>.
+    </p>
+    <p>
+      Otherwise, please <a href="/" title="Go to home page" class="alert-link">go back to home page</a>.
+    </p>
+</div>
+{% endblock %}
