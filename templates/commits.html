@@ -26,16 +26,53 @@
       <a href="/feed/{{ repository.name }}/{{ folder }}" title="RSS Feed of the last changes for this section"
         class="btn btn-outline-primary">
         <i class="bi bi-rss" style="color:#fd7e14;"></i> RSS Feed</a>
-      <a href="/api/{{ repository.name }}/{{ folder }}" title="View the result as JSON formatted"
-        class="btn btn-outline-primary">
+      <a href="/api/{{ repository.name }}/{{ folder }}{% if session.username %}?since={{ since }}{% endif %}"
+        title="View the result as JSON formatted" class="btn btn-outline-primary">
         <i class="bi bi-filetype-json"></i> View as JSON</a>
+      {% if session.username %}
+      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#settingsModal">
+        <i class="bi bi-gear"></i> Settings
+      </button>
+      {% endif %}
     </div>
     <p class="lead mt-2">
       {% if commits|length >= 1 %}
-      Last {{commits|length}} commits{% if commits|length < max_commits%} over the last {{ since }} days{% endif %}: {%
-        else %} No commit in the last {{ since }} days. {% endif %} </p>
+      {% if session.username %}
+      Last {{ commits|length }} commits over the last {{ since }} days:
+      {% else %}
+      Last {{ commits|length }} commits{% if commits|length < max_commits %} over the last {{ since }} days{% endif %}:
+        {% endif %} {% else %} No commit in the last {{ since }} days. {% endif %}</p>
   </div>
 </div>
+
+{% if session.username %}
+<!-- Modal -->
+<form>
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Change default settings</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="since" class="form-label">Number of days to look back for commits:</label>
+          <input type="range" id="sinceRangeInput" name="since" min="1" max="20" value="{{ since }}"
+            oninput="since_output.value=sinceRangeInput.value" class="form-range">
+          <div class="text-center strong">
+            <output id="since_output" name="since_output" for="sinceRangeInput">{{ since }}</output>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endif %}
+
 <div class="row row-cols-auto">
   {% for commit in commits %}
   <div class="col mb-3 col-12 col-md-4">

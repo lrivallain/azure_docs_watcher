@@ -23,17 +23,17 @@ def basic_error_handling(e):
     )
 
 
-class SAML403(Exception):
+class SAML403Exception(Exception):
     def __init__(self, repository):
         self.repository = repository
 
 
-@app.errorhandler(SAML403)
+@app.errorhandler(SAML403Exception)
 def saml403(e):
     """Error handler for SAML403 exceptions.
 
     Args:
-        e (SAML403): Exception
+        e (SAML403Exception): Exception
 
     Returns:
         flask.render_template: Error page

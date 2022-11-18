@@ -22,8 +22,9 @@ import coloredlogs
 from config import *
 
 # Import local modules
-from utils import get_commits, get_feed, cache, cache_home, get_repo_config
-from github_lib import get_repo_contents, get_repo, login_management
+from utils import get_feed, cache, cache_home, get_repo_config
+from github_lib import get_repo_contents, get_repo, login_management, get_commits
+from flask_dance.contrib.github import github as gh_auth
 from base_routes import *
 
 # configure logging
@@ -111,7 +112,9 @@ def get_commits_from_section(repo_owner: str, repo_name: str, folder: str):
     Returns:
         str: html page
     """
-    _since = int(request.args.get("since", SINCE))
+    _since = SINCE
+    if gh_auth.authorized:
+        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
     repo = get_repo(
         g,
@@ -150,7 +153,9 @@ def repo_feed(repo_owner: str, repo_name: str):
     Returns:
         str: rss feed
     """
-    _since = int(request.args.get("since", SINCE))
+    _since = SINCE
+    if gh_auth.authorized:
+        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
     repo = get_repo(
         g,
@@ -171,6 +176,37 @@ def repo_feed(repo_owner: str, repo_name: str):
     )
 
 
+@app.route("/api/<repo_owner>/<repo_name>")
+@login_management
+def repo_api(repo_owner: str, repo_name: str):
+    """RSS Feed of commits in the repository
+
+    Args:
+        repo_owner (str): GitHub repo owner.
+        repo_name (str): GitHub repo name.
+
+    Returns:
+        str: rss feed
+    """
+    _since = SINCE
+    if gh_auth.authorized:
+        _since = int(request.args.get("since", SINCE))
+    config_repo = get_repo_config(repo_owner, repo_name)
+    repo = get_repo(
+        g,
+        config_repo=config_repo,
+        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
+    )
+    commits = get_commits(
+        repo,
+        config_repo.get("articles_folder"),
+        _since,
+        shared_token=True,  # simulate a shared token usage to limit the length of the result
+        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
+    )
+    return jsonify(commits)
+
+
 @app.route("/feed/<repo_owner>/<repo_name>/<path:folder>")
 @login_management
 def section_feed(repo_owner: str, repo_name: str, folder: str):
@@ -184,7 +220,9 @@ def section_feed(repo_owner: str, repo_name: str, folder: str):
     Returns:
         str: rss feed
     """
-    _since = int(request.args.get("since", SINCE))
+    _since = SINCE
+    if gh_auth.authorized:
+        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
     repo = get_repo(
         g,
@@ -203,35 +241,6 @@ def section_feed(repo_owner: str, repo_name: str, folder: str):
     return Response(get_feed(commits, folder, config_repo), mimetype="text/xml")
 
 
-@app.route("/api/<repo_owner>/<repo_name>")
-@login_management
-def repo_api(repo_owner: str, repo_name: str):
-    """RSS Feed of commits in the repository
-
-    Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
-
-    Returns:
-        str: rss feed
-    """
-    _since = int(request.args.get("since", SINCE))
-    config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    commits = get_commits(
-        repo,
-        config_repo.get("articles_folder"),
-        _since,
-        shared_token=True,  # simulate a shared token usage to limit the length of the result
-        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    return jsonify(commits)
-
-
 @app.route("/api/<repo_owner>/<repo_name>/<path:folder>")
 @login_management
 def section_api(repo_owner: str, repo_name: str, folder: str):
@@ -245,7 +254,9 @@ def section_api(repo_owner: str, repo_name: str, folder: str):
     Returns:
         str: rss feed
     """
-    _since = int(request.args.get("since", SINCE))
+    _since = SINCE
+    if gh_auth.authorized:
+        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
     repo = get_repo(
         g,
