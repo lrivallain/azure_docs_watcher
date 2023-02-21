@@ -55,6 +55,14 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure-Quantum.svg",
     },
+    "Azure/iotedge" : {
+        "name": "Azure/iotedge",
+        "display_name": "Azure IoT Edge",
+        "owner": "Azure",
+        "repository": "iotedge",
+        "articles_folder": "/doc/",
+        "icon": "azure-icons/IoT-Edge.svg",
+    },
     "lrivallain/azure_docs_watcher": {
         "name": "lrivallain/azure_docs_watcher",
         "display_name": "Azure Docs Watcher",
