@@ -84,7 +84,11 @@ def _request(url: str, accept: str) -> requests.Response:
         response = requests.get(url, headers=headers, timeout=HTTP_TIMEOUT)
     except requests.exceptions.Timeout as exc:
         raise GitHubError(504, "GitHub did not answer in time.") from exc
-    except requests.exceptions.RequestException as exc:
+    except OSError as exc:
+        # requests.exceptions.RequestException derives from OSError, so this
+        # also covers lower level failures such as an unusable CA bundle, which
+        # would otherwise surface as an unhandled error.
+        log.warning("Transport failure while calling %s: %s", url, exc)
         raise GitHubError(502, "Unable to reach GitHub.") from exc
 
     if response.status_code == 200:

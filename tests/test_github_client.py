@@ -1,6 +1,7 @@
 """Tests for the credential-free GitHub client."""
 
 import pytest
+import requests
 import responses
 from conftest import atom_entry, atom_feed, days_ago
 
@@ -232,3 +233,33 @@ def test_no_credential_is_ever_sent():
     )
     for call in responses.calls:
         assert "Authorization" not in call.request.headers
+
+
+@responses.activate
+def test_a_timeout_is_reported_as_a_gateway_timeout():
+    responses.add(responses.GET, BRANCH_URL, body=requests.exceptions.Timeout())
+    with pytest.raises(GitHubError) as excinfo:
+        github_client.get_default_branch("MicrosoftDocs", "azure-docs")
+    assert excinfo.value.status_code == 504
+
+
+@responses.activate
+def test_a_connection_failure_is_reported_as_a_bad_gateway():
+    responses.add(responses.GET, BRANCH_URL, body=requests.exceptions.ConnectionError())
+    with pytest.raises(GitHubError) as excinfo:
+        github_client.get_default_branch("MicrosoftDocs", "azure-docs")
+    assert excinfo.value.status_code == 502
+
+
+@responses.activate
+def test_a_low_level_os_error_does_not_escape():
+    # A broken CA bundle raises a plain OSError, which is not a
+    # requests.exceptions.RequestException and used to surface as a 500.
+    responses.add(
+        responses.GET,
+        BRANCH_URL,
+        body=OSError("Could not find a suitable TLS CA certificate bundle"),
+    )
+    with pytest.raises(GitHubError) as excinfo:
+        github_client.get_default_branch("MicrosoftDocs", "azure-docs")
+    assert excinfo.value.status_code == 502
