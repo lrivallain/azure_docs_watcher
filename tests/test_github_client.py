@@ -196,6 +196,23 @@ def test_directory_lists_folders_first_then_files():
 
 
 @responses.activate
+def test_directory_hides_tooling_folders():
+    responses.add(
+        responses.GET,
+        CONTENTS_URL,
+        json=[
+            {"name": ".github", "path": "articles/.github", "type": "dir"},
+            {"name": ".vscode", "path": "articles/.vscode", "type": "dir"},
+            {"name": "_bread", "path": "articles/_bread", "type": "dir"},
+            {"name": "storage", "path": "articles/storage", "type": "dir"},
+        ],
+        status=200,
+    )
+    entries = github_client.get_directory("MicrosoftDocs", "azure-docs", "articles")
+    assert [entry["name"] for entry in entries] == ["storage"]
+
+
+@responses.activate
 def test_a_file_path_is_not_a_directory():
     responses.add(
         responses.GET,

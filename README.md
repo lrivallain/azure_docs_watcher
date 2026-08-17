@@ -9,11 +9,26 @@ an **RSS feed** or **JSON**.
 
 ## Features
 
-* Browse the sections of the documentation repositories:
-  * [Azure Docs](https://github.com/MicrosoftDocs/azure-docs)
-  * [Azure SQL](https://github.com/MicrosoftDocs/sql-docs)
-  * [Azure Quantum](https://github.com/MicrosoftDocs/quantum-docs)
-  * [Azure IoT Edge](https://github.com/Azure/iotedge)
+* Browse the sections of the Azure and Microsoft documentation repositories:
+  * **Azure core** — [Azure Docs](https://github.com/MicrosoftDocs/azure-docs),
+    [Compute](https://github.com/MicrosoftDocs/azure-compute-docs),
+    [AKS](https://github.com/MicrosoftDocs/azure-aks-docs),
+    [Databases](https://github.com/MicrosoftDocs/azure-databases-docs),
+    [SQL](https://github.com/MicrosoftDocs/sql-docs),
+    [Monitor](https://github.com/MicrosoftDocs/azure-monitor-docs),
+    [Security](https://github.com/MicrosoftDocs/azure-security-docs),
+    [Local](https://github.com/MicrosoftDocs/azure-stack-docs),
+    [IoT Edge](https://github.com/Azure/iotedge),
+    [Quantum](https://github.com/MicrosoftDocs/quantum-docs)
+  * **AI and data** — [Azure AI and Foundry](https://github.com/MicrosoftDocs/azure-ai-docs),
+    [Microsoft Fabric](https://github.com/MicrosoftDocs/fabric-docs)
+  * **Security and identity** — [Microsoft Entra](https://github.com/MicrosoftDocs/entra-docs),
+    [Defender and Sentinel](https://github.com/MicrosoftDocs/defender-docs),
+    [Intune](https://github.com/MicrosoftDocs/memdocs)
+  * **Guidance and tooling** — [Architecture Center](https://github.com/MicrosoftDocs/architecture-center),
+    [Cloud Adoption Framework](https://github.com/MicrosoftDocs/cloud-adoption-framework),
+    [Azure for Developers](https://github.com/MicrosoftDocs/azure-dev-docs),
+    [Azure DevOps](https://github.com/MicrosoftDocs/azure-devops-docs)
 * Watch any other public repository the same way (#17)
 * See the latest changes for a given service or section
 * RSS feed for every repository and every section (#7), with feed autodiscovery
@@ -21,6 +36,11 @@ an **RSS feed** or **JSON**.
 * Caching to keep the service fast and light on GitHub (#9)
 * Light and dark theme, following your system preference (#19)
 * **No GitHub account, token or login required — anywhere**
+
+> Microsoft has been splitting `MicrosoftDocs/azure-docs` into per-domain
+> repositories: virtual machines, AKS, Cosmos DB, Monitor, AI services, machine
+> learning and Defender for Cloud no longer live there. The list above follows
+> the content to its new homes.
 
 ## How it works, and why there is no token
 

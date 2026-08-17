@@ -339,6 +339,10 @@ def get_directory(owner: str, repository: str, path: str) -> tuple:
             "type": item.get("type", ""),
         }
         for item in payload
+        # Documentation repositories keep their tooling in dot and underscore
+        # prefixed folders (.github, .vscode, .docutune, _bread): those are not
+        # documentation sections and only add noise to the listing.
+        if item.get("name") and item["name"][0] not in "._"
     ]
     # Folders first, then files, both alphabetically.
     return tuple(sorted(entries, key=lambda e: (e["type"] != "dir", e["name"].lower())))

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import repo_icon %}
 {% block title %}{{ repository.display_name }}{% endblock %}
 
 {% block feed_autodiscovery %}
@@ -16,10 +17,7 @@
 </nav>
 
 <div class="d-flex align-items-start gap-3 mb-3">
-  {% if repository.icon %}
-  <img src="{{ url_for('static', filename=repository.icon) }}"
-    alt="Icon of the {{ repository.display_name }} repository" width="56" height="56" class="d-none d-sm-block">
-  {% endif %}
+  <div class="d-none d-sm-block">{{ repo_icon(repository, '3.5rem') }}</div>
   <div class="flex-grow-1">
     <h1 class="h4 text-break">{{ repository.owner }}/{{ repository.repository }}</h1>
     <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Actions">

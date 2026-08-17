@@ -44,6 +44,14 @@
 
 ### Changed
 
+* Pre-configured 15 more documentation repositories. Microsoft has been
+  splitting `MicrosoftDocs/azure-docs` into per-domain repositories, so virtual
+  machines, AKS, Cosmos DB, Monitor, AI services, machine learning and Defender
+  for Cloud were no longer reachable from the repositories listed here.
+* Repositories without a product icon now render a Bootstrap glyph instead of a
+  broken image, through a shared template macro.
+* Section listings hide the dot and underscore prefixed tooling folders
+  (`.github`, `.vscode`, `.docutune`, `_bread`) that are not documentation.
 * Bootstrap 5.3 with its native colour modes replaces the abandoned
   `bootstrap-dark-5` fork; jQuery and `js-cookie` are gone.
 * All CDN assets are pinned and protected by subresource integrity.

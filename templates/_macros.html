@@ -1,0 +1,12 @@
+{# Renders a repository icon: its SVG when it has one, a Bootstrap glyph
+   otherwise. Keeping it in one place avoids the unguarded <img> that produced a
+   broken image for repositories without an icon. #}
+{% macro repo_icon(repository, size) %}
+{% if repository.icon %}
+<img src="{{ url_for('static', filename=repository.icon) }}" alt=""
+  style="width:{{ size }};height:{{ size }};object-fit:contain;">
+{% else %}
+<i class="bi bi-{{ repository.glyph or 'journal-code' }} text-body-secondary d-inline-block text-center"
+  style="font-size:calc({{ size }} * 0.8);width:{{ size }};line-height:{{ size }};" aria-hidden="true"></i>
+{% endif %}
+{% endmacro %}
