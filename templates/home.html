@@ -38,7 +38,8 @@
         </p>
       </div>
       <div class="card-footer d-flex justify-content-between align-items-center">
-        <a href="/{{ repository.name }}" class="btn btn-primary btn-sm">Browse sections</a>
+        <a href="/{{ repository.name }}" class="btn btn-primary btn-sm"
+          title="Browse the sections of {{ repository.display_name }}">Browse sections</a>
         <a href="/feed/{{ repository.name }}" class="btn btn-sm btn-outline-warning"
           title="RSS feed of the latest changes for this repository">
           <i class="bi bi-rss-fill"></i>
@@ -74,7 +75,7 @@
       </div>
       <div class="card-footer">
         <a href="#" class="btn btn-primary btn-sm disabled" id="customRepositoryButton"
-          aria-disabled="true">Browse sections</a>
+          title="Browse the sections of this repository" aria-disabled="true">Browse sections</a>
       </div>
     </div>
   </div>

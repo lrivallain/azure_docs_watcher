@@ -44,6 +44,7 @@
 .commit-card,
 .repo-card {
   transition:
+    background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out,
     box-shadow 0.15s ease-in-out;
 }
@@ -96,10 +97,14 @@
     border-bottom: 0;
   }
 
-  /* A row highlight reads better than a floating ring in a table. */
+  /* A row highlight reads better than a floating ring in a table, with the
+     accent colour underlining the row that is pointed at. */
   [data-view="list"] .view-collection :is(.repo-card, .commit-card):hover,
   [data-view="list"] .view-collection :is(.repo-card, .commit-card):focus-within {
     background-color: var(--bs-tertiary-bg);
+    border-bottom-color: var(--bs-primary);
+    /* An inset shadow thickens the underline without shifting the layout. */
+    box-shadow: inset 0 -0.15rem 0 var(--bs-primary);
   }
 
   /* Cells: no cap background, tight padding, one continuous surface. */

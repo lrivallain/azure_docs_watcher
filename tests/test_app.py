@@ -76,6 +76,18 @@ def test_home_offers_the_layout_toggle(client):
 
 
 @responses.activate
+def test_action_buttons_carry_a_tooltip_title(client):
+    register_section()
+    response = client.get("/MicrosoftDocs/azure-docs/aks")
+    # Tooltips are built from the title attribute, so a button without one is
+    # silently left without a tooltip.
+    assert b'title="View commit' in response.data
+
+    home = client.get("/")
+    assert b'title="Browse the sections of' in home.data
+
+
+@responses.activate
 def test_section_page_offers_the_layout_toggle(client):
     register_section()
     response = client.get("/MicrosoftDocs/azure-docs/aks")

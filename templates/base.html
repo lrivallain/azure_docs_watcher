@@ -150,6 +150,17 @@
       render();
     })();
   </script>
+  <script>
+    (() => {
+      /* Turn the native title of every link and button into a Bootstrap
+         tooltip. Elements already driving another behaviour through
+         data-bs-toggle (the navbar collapse) are left alone. */
+      document.querySelectorAll('a[title], button[title]').forEach((element) => {
+        if (element.dataset.bsToggle) return;
+        new bootstrap.Tooltip(element, { trigger: 'hover focus' });
+      });
+    })();
+  </script>
 </body>
 
 </html>

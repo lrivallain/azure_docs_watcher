@@ -81,7 +81,8 @@
         <small class="text-body-secondary text-truncate" title="{{ commit.author }}">
           <i class="bi bi-person"></i> {{ commit.author or 'unknown' }}
         </small>
-        <a href="{{ commit.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
+        <a href="{{ commit.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary"
+          title="View commit {{ commit.sha[:7] }} on GitHub">
           <i class="bi bi-box-arrow-up-right"></i> View
         </a>
       </div>

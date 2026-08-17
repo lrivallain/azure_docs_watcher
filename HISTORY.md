@@ -44,6 +44,9 @@
 
 ### Changed
 
+* Every button carries a styled tooltip, built from its title attribute.
+* In the table view, the row under the pointer is underlined with the accent
+  colour and tinted, the same way a card highlights itself in the grid.
 * The repository list and the commit list can be shown as a grid of cards or as
   a dense table. The choice is stored locally and applies to both pages, and is
   restored before the first paint so the layout does not flicker.
