@@ -49,8 +49,9 @@
   declared !important, so `.shadow-sm` was silently winning over both the hover
   ring of the grid and the underline of the table view: repository cards showed
   neither, while commit cards showed both.
-* In the table view, the row under the pointer is underlined with the accent
-  colour and tinted, the same way a card highlights itself in the grid.
+* In the table view, the row under the pointer is tinted and underlined with
+  the halo of the grid cards: the accent colour on the edge itself, topped by a
+  translucent band of the same colour.
 * The repository list and the commit list can be shown as a grid of cards or as
   a dense table. The choice is stored locally and applies to both pages, and is
   restored before the first paint so the layout does not flicker.

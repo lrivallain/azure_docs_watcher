@@ -101,8 +101,10 @@
     box-shadow: none;
   }
 
+  /* The last row has no divider, but it keeps a transparent one so that its
+     hover underline lines up with the other rows instead of shifting them. */
   [data-view="list"] .view-collection > *:last-child :is(.repo-card, .commit-card) {
-    border-bottom: 0;
+    border-bottom-color: transparent;
   }
 
   /* The custom repository card is not a row: keep it flat inside the frame. */
@@ -113,14 +115,14 @@
     border-top: var(--bs-border-width) solid var(--bs-border-color);
   }
 
-  /* A row highlight reads better than a floating ring in a table, with the
-     accent colour underlining the row that is pointed at. */
+  /* A row highlight reads better than a floating ring in a table. The
+     underline reuses the halo recipe of the grid cards: the accent colour on
+     the edge itself, topped by a 0.2rem translucent band of the same colour. */
   [data-view="list"] .view-collection :is(.repo-card, .commit-card):hover,
   [data-view="list"] .view-collection :is(.repo-card, .commit-card):focus-within {
     background-color: var(--bs-tertiary-bg);
     border-bottom-color: var(--bs-primary);
-    /* An inset shadow thickens the underline without shifting the layout. */
-    box-shadow: inset 0 -0.15rem 0 var(--bs-primary);
+    box-shadow: inset 0 -0.2rem 0 rgba(var(--bs-primary-rgb), 0.25);
   }
 
   /* Cells: no cap background, tight padding, one continuous surface. */
