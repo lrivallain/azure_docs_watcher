@@ -1,0 +1,6 @@
+-r requirements.txt
+# Tests
+pytest==9.1.1
+responses==0.26.2
+# Linting and formatting
+ruff==0.16.2

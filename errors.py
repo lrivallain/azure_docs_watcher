@@ -1,43 +1,19 @@
-import logging
+"""Application specific exceptions.
 
-from flask import render_template
-from werkzeug.exceptions import HTTPException
-
-from base_routes import app
-
-
-# configure logging
-log = logging.getLogger(__name__)
+Kept free of any Flask import so that the GitHub client stays testable in
+isolation and cannot create circular imports with the application module.
+"""
 
 
-@app.errorhandler(HTTPException)
-def basic_error_handling(e):
-    log.error(f"{e.code}: {str(e.description)}")
-    return (
-        render_template(
-            "error.html",
-            error_code=e.code,
-            error_message=e.description,
-        ),
-        e.code,
-    )
-
-
-class SAML403Exception(Exception):
-    def __init__(self, repository):
-        self.repository = repository
-
-
-@app.errorhandler(SAML403Exception)
-def saml403(e):
-    """Error handler for SAML403 exceptions.
+class GitHubError(Exception):
+    """Raised when GitHub cannot serve the public data that was requested.
 
     Args:
-        e (SAML403Exception): Exception
-
-    Returns:
-        flask.render_template: Error page
+        status_code (int): HTTP status code to expose to the visitor.
+        message (str): human readable description of the failure.
     """
-    log.warning(f"SAML enforcement error. A specific error page is displayed.")
-    log.debug(f"Repository: {e.repository.get('owner')}/{e.repository.get('name')}")
-    return render_template("error_saml.html", repository=e.repository), 403
+
+    def __init__(self, status_code: int, message: str):
+        super().__init__(message)
+        self.status_code = status_code
+        self.message = message

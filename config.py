@@ -1,5 +1,4 @@
-"""Manage the application configuration.
-"""
+"""Manage the application configuration."""
 
 import os
 
@@ -8,29 +7,32 @@ APP_AUTHOR = "Ludovic Rivallain"
 APP_AUTHOR_EMAIL = "ludovic . rivallain @ gmail . com"
 APP_DESCRIPTION = "Track changes in __repo__ documentation articles"
 
-# Performances limits
-SINCE = int(os.getenv("AZDOCSWATCH_SINCE", 5))
-MAX_COMMITS = int(os.getenv("AZDOCSWATCH_MAX_COMMITS", 20))
+# GitHub serves commit Atom feeds as a single, non paginated page of this many
+# entries, with no date filter. Nothing can raise that ceiling, so it is not
+# configurable: it only serves to tell visitors when a listing is capped.
+ATOM_FEED_SIZE = 20
 
 # Cache configuration
 CACHE_SIZE = int(os.getenv("AZDOCSWATCH_CACHE_SIZE", 1024))
 CACHE_TTL = int(os.getenv("AZDOCSWATCH_CACHE_TTL", 600))
 
-# GitHub application configuration
-GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
-GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+# GitHub endpoints and HTTP client settings
+GITHUB_WEB_BASE = os.getenv("GITHUB_WEB_BASE", "https://github.com").rstrip("/")
+GITHUB_API_BASE = os.getenv("GITHUB_API_BASE", "https://api.github.com").rstrip("/")
+HTTP_TIMEOUT = int(os.getenv("AZDOCSWATCH_HTTP_TIMEOUT", 10))
+USER_AGENT = os.getenv(
+    "AZDOCSWATCH_USER_AGENT",
+    "azure-docs-watcher (+https://github.com/lrivallain/azure_docs_watcher)",
+)
 
-# Azure Docs repo configuration
-AZURE_DOCS_REPO = "azure-docs"
-AZURE_DOCS_OWNER = "MicrosoftDocs"
-AZURE_DOCS_ARTICLES_FOLDER_PREFIX = "/articles/"
-
-# Shared Github client token
-GITHUB_ACCESS_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
-if not GITHUB_ACCESS_TOKEN:
-    raise Exception("GITHUB_ACCESS_TOKEN environment variable is not set")
-
+# Watched repositories.
+#
+# Declaration order drives the order of the home page: the most broadly useful
+# products come first, niche and edge ones last. Microsoft has been splitting
+# MicrosoftDocs/azure-docs into per-domain repositories, so several services
+# that used to live there are watched through their own repository below.
 AZURE_DOCS_REPOS = {
+    # Core Azure platform
     "MicrosoftDocs/azure-docs": {
         "name": "MicrosoftDocs/azure-docs",
         "display_name": "Azure Docs",
@@ -38,6 +40,30 @@ AZURE_DOCS_REPOS = {
         "repository": "azure-docs",
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure.svg",
+    },
+    "MicrosoftDocs/azure-compute-docs": {
+        "name": "MicrosoftDocs/azure-compute-docs",
+        "display_name": "Azure Compute",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-compute-docs",
+        "articles_folder": "/articles/",
+        "glyph": "cpu",
+    },
+    "MicrosoftDocs/azure-aks-docs": {
+        "name": "MicrosoftDocs/azure-aks-docs",
+        "display_name": "Azure Kubernetes Service",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-aks-docs",
+        "articles_folder": "/articles/",
+        "glyph": "boxes",
+    },
+    "MicrosoftDocs/azure-databases-docs": {
+        "name": "MicrosoftDocs/azure-databases-docs",
+        "display_name": "Azure Databases",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-databases-docs",
+        "articles_folder": "/articles/",
+        "glyph": "database",
     },
     "MicrosoftDocs/azure-sql": {
         "name": "MicrosoftDocs/azure-sql",
@@ -47,15 +73,109 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/azure-sql/",
         "icon": "azure-icons/Azure-SQL.svg",
     },
-    "MicrosoftDocs/azure-quantum": {
-        "name": "MicrosoftDocs/azure-quantum",
-        "display_name": "Azure Quantum (preview)",
+    # AI and data
+    "MicrosoftDocs/azure-ai-docs": {
+        "name": "MicrosoftDocs/azure-ai-docs",
+        "display_name": "Azure AI and Foundry",
         "owner": "MicrosoftDocs",
-        "repository": "quantum-docs",
+        "repository": "azure-ai-docs",
         "articles_folder": "/articles/",
-        "icon": "azure-icons/Azure-Quantum.svg",
+        "glyph": "robot",
     },
-    "Azure/iotedge" : {
+    "MicrosoftDocs/fabric-docs": {
+        "name": "MicrosoftDocs/fabric-docs",
+        "display_name": "Microsoft Fabric",
+        "owner": "MicrosoftDocs",
+        "repository": "fabric-docs",
+        "articles_folder": "/docs/",
+        "glyph": "diagram-3",
+    },
+    # Identity, security and operations
+    "MicrosoftDocs/entra-docs": {
+        "name": "MicrosoftDocs/entra-docs",
+        "display_name": "Microsoft Entra",
+        "owner": "MicrosoftDocs",
+        "repository": "entra-docs",
+        "articles_folder": "/docs/",
+        "glyph": "person-badge",
+    },
+    "MicrosoftDocs/defender-docs": {
+        "name": "MicrosoftDocs/defender-docs",
+        "display_name": "Microsoft Defender and Sentinel",
+        "owner": "MicrosoftDocs",
+        "repository": "defender-docs",
+        # The products sit directly at the root of this repository.
+        "articles_folder": "/",
+        "glyph": "shield-check",
+    },
+    "MicrosoftDocs/azure-security-docs": {
+        "name": "MicrosoftDocs/azure-security-docs",
+        "display_name": "Azure Security",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-security-docs",
+        "articles_folder": "/articles/",
+        "glyph": "shield-lock",
+    },
+    "MicrosoftDocs/azure-monitor-docs": {
+        "name": "MicrosoftDocs/azure-monitor-docs",
+        "display_name": "Azure Monitor",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-monitor-docs",
+        "articles_folder": "/articles/",
+        "glyph": "graph-up-arrow",
+    },
+    # Guidance
+    "MicrosoftDocs/architecture-center": {
+        "name": "MicrosoftDocs/architecture-center",
+        "display_name": "Azure Architecture Center",
+        "owner": "MicrosoftDocs",
+        "repository": "architecture-center",
+        "articles_folder": "/docs/",
+        "glyph": "compass",
+    },
+    "MicrosoftDocs/cloud-adoption-framework": {
+        "name": "MicrosoftDocs/cloud-adoption-framework",
+        "display_name": "Cloud Adoption Framework",
+        "owner": "MicrosoftDocs",
+        "repository": "cloud-adoption-framework",
+        "articles_folder": "/docs/",
+        "glyph": "map",
+    },
+    # Developer and platform tooling
+    "MicrosoftDocs/azure-dev-docs": {
+        "name": "MicrosoftDocs/azure-dev-docs",
+        "display_name": "Azure for Developers",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-dev-docs",
+        "articles_folder": "/articles/",
+        "glyph": "code-slash",
+    },
+    "MicrosoftDocs/azure-devops-docs": {
+        "name": "MicrosoftDocs/azure-devops-docs",
+        "display_name": "Azure DevOps",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-devops-docs",
+        "articles_folder": "/docs/",
+        "glyph": "infinity",
+    },
+    # Endpoint, hybrid and edge
+    "MicrosoftDocs/memdocs": {
+        "name": "MicrosoftDocs/memdocs",
+        "display_name": "Microsoft Intune",
+        "owner": "MicrosoftDocs",
+        "repository": "memdocs",
+        "articles_folder": "/intune/",
+        "glyph": "phone",
+    },
+    "MicrosoftDocs/azure-stack-docs": {
+        "name": "MicrosoftDocs/azure-stack-docs",
+        "display_name": "Azure Local",
+        "owner": "MicrosoftDocs",
+        "repository": "azure-stack-docs",
+        "articles_folder": "/azure-local/",
+        "glyph": "hdd-stack",
+    },
+    "Azure/iotedge": {
         "name": "Azure/iotedge",
         "display_name": "Azure IoT Edge",
         "owner": "Azure",
@@ -63,6 +183,15 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/doc/",
         "icon": "azure-icons/IoT-Edge.svg",
     },
+    "MicrosoftDocs/azure-quantum": {
+        "name": "MicrosoftDocs/azure-quantum",
+        "display_name": "Azure Quantum",
+        "owner": "MicrosoftDocs",
+        "repository": "quantum-docs",
+        "articles_folder": "/articles/",
+        "icon": "azure-icons/Azure-Quantum.svg",
+    },
+    # This very application
     "lrivallain/azure_docs_watcher": {
         "name": "lrivallain/azure_docs_watcher",
         "display_name": "Azure Docs Watcher",

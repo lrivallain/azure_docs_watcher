@@ -1,16 +1,13 @@
 # Server
-Flask
+Flask==3.1.3
+gunicorn==26.0.0
 # Logging
-coloredlogs
-# GitHub client
-PyGithub
-# oAuth2
-authlib
-Flask-Login
-flask_dance
+coloredlogs==15.0.1
+# GitHub access (Atom feeds + anonymous REST): no credential required
+requests==2.34.2
 # RSS
-feedgen
+feedgen==1.0.0
 # Caching
-cachetools
-# Configuration
-python-dotenv
+cachetools==7.1.7
+# Local development configuration (.env support for `flask run`)
+python-dotenv==1.2.2

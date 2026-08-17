@@ -1,275 +1,263 @@
-"""Main module."""
+"""Azure Docs changes watcher.
 
-import os
+A small Flask application exposing, as HTML pages, RSS feeds and JSON, the
+recent commits touching a section of a public documentation repository.
+
+It runs without any GitHub credential: see ``github_client`` for the details.
+"""
+
 import logging
-from markupsafe import escape
-from hashlib import sha256
+import os
 
-from flask import (
-    render_template,
-    Response,
-    request,
-    g,
-    jsonify,
-    redirect,
-)
-from werkzeug.middleware.proxy_fix import (
-    ProxyFix,
-)  # https://flask.palletsprojects.com/en/latest/deploying/proxy_fix/
 import coloredlogs
+from flask import (
+    Flask,
+    Response,
+    jsonify,
+    render_template,
+    send_from_directory,
+    url_for,
+)
+from werkzeug.exceptions import HTTPException
 
-# Import local configuration
-from config import *
+# https://flask.palletsprojects.com/en/latest/deploying/proxy_fix/
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Import local modules
-from utils import get_feed, cache, cache_home, get_repo_config
-from github_lib import get_repo_contents, get_repo, login_management, get_commits
-from flask_dance.contrib.github import github as gh_auth
-from base_routes import *
+import github_client
+from config import ATOM_FEED_SIZE, AZURE_DOCS_REPOS
+from errors import GitHubError
+from feeds import get_feed
+from utils import get_repo_config
 
-# configure logging
 log = logging.getLogger(__name__)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
-# create the Flask app
+app = Flask(__name__, static_folder="static")
+app.url_map.strict_slashes = False
+
 if app.debug:
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     coloredlogs.install(level="DEBUG")
 else:
-    # https://flask.palletsprojects.com/en/latest/deploying/proxy_fix/
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     coloredlogs.install(level="INFO")
 
 
-@app.route("/")
-@login_management
-def home():
-    """Home page.
+def _join_path(prefix: str, folder: str = None) -> str:
+    """Join a repository articles folder and a section into a clean path.
+
+    Args:
+        prefix (str): the repository articles folder, e.g. ``/articles/``.
+        folder (str, optional): the watched section.
 
     Returns:
-        flask.render_template: Home page
+        str: a slash separated path without leading nor trailing slash.
     """
-    # Manage a redirect from the lasted viewed page when logging in or out
-    if session.get("next"):
-        log.debug(f"Redirecting to {session.get('next')}")
-        next_url = session.get("next")
-        session.pop("next", None)
-        return redirect(next_url, code=302)
-    log.debug("Rendering home page")
-    repos_list = []
-    for repo in AZURE_DOCS_REPOS:
-        repos_list.append(AZURE_DOCS_REPOS[repo])
+    parts = [part.strip("/") for part in (prefix, folder) if part]
+    return "/".join(part for part in parts if part)
+
+
+def _commits_for(config_repo: dict, folder: str = None) -> list:
+    """Collect the most recent commits of a section.
+
+    Args:
+        config_repo (dict): repository configuration.
+        folder (str, optional): the watched section.
+
+    Returns:
+        list: the commits, most recent first.
+    """
+    return github_client.get_commits(
+        owner=config_repo["owner"],
+        repository=config_repo["repository"],
+        path=_join_path(config_repo.get("articles_folder"), folder),
+    )
+
+
+def _as_json(commits: list) -> Response:
+    """Serialize commits for the JSON API, using ISO-8601 dates.
+
+    Args:
+        commits (list): the commits to serialize.
+
+    Returns:
+        Response: the JSON response.
+    """
+    return jsonify(
+        [
+            {**commit, "date": commit["date"].isoformat() if commit["date"] else None}
+            for commit in commits
+        ]
+    )
+
+
+@app.route("/")
+def home():
+    """Home page, listing the curated repositories.
+
+    Returns:
+        str: html page.
+    """
     return render_template(
         "home.html",
-        repos=repos_list,
-        since=SINCE,
-        max_commits=MAX_COMMITS,
+        repos=list(AZURE_DOCS_REPOS.values()),
     )
 
 
 @app.route("/<repo_owner>/<repo_name>")
-@login_management
 def repo_home(repo_owner: str, repo_name: str):
-    """List files and folders to get commits logs from.
+    """List the sections available for a repository.
 
     Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
+        repo_owner (str): GitHub repository owner.
+        repo_name (str): GitHub repository name.
 
     Returns:
-        str: html page
+        str: html page.
     """
     config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    contents = get_repo_contents(
-        repo,
-        path=config_repo.get("articles_folder").lstrip("/").rstrip("/"),
-        cache_key=f"{config_repo.get('name')}-home-{sha256(g.gh_token.encode()).hexdigest()}",
+    contents = github_client.get_directory(
+        owner=config_repo["owner"],
+        repository=config_repo["repository"],
+        path=_join_path(config_repo.get("articles_folder")),
     )
     return render_template(
         "repo_home.html",
         repository=config_repo,
         contents=contents,
-        since=SINCE,
-        max_commits=MAX_COMMITS,
+        # A section index is only ever a list: a grid of cards would add
+        # nothing, so the layout switch is not offered here.
+        forced_view="list",
     )
 
 
 @app.route("/<repo_owner>/<repo_name>/<path:folder>")
-@login_management
 def get_commits_from_section(repo_owner: str, repo_name: str, folder: str):
-    """Track commits on a specific section of the Azure documentation.
+    """Track the commits of a specific section of a documentation repository.
 
     Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
-        folder (str): section to track
+        repo_owner (str): GitHub repository owner.
+        repo_name (str): GitHub repository name.
+        folder (str): section to track.
 
     Returns:
-        str: html page
+        str: html page.
     """
-    _since = SINCE
-    if gh_auth.authorized:
-        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-
-    _folder_path = os.path.join(config_repo.get("articles_folder"), folder.lstrip("/"))
-    commits = get_commits(
-        repo,
-        _folder_path,
-        _since,
-        shared_token=g.using_shared_gh,
-        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-
+    commits = _commits_for(config_repo, folder)
     return render_template(
         "commits.html",
         repository=config_repo,
-        folder=escape(folder),
+        folder=folder,
         commits=commits,
-        max_commits=MAX_COMMITS,
-        since=_since,
+        feed_size=ATOM_FEED_SIZE,
     )
 
 
 @app.route("/feed/<repo_owner>/<repo_name>")
-@login_management
-def repo_feed(repo_owner: str, repo_name: str):
-    """RSS Feed of commits in the repository
+@app.route("/feed/<repo_owner>/<repo_name>/<path:folder>")
+def repo_feed(repo_owner: str, repo_name: str, folder: str = None):
+    """RSS feed of the commits of a repository or of one of its sections.
 
     Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
+        repo_owner (str): GitHub repository owner.
+        repo_name (str): GitHub repository name.
+        folder (str, optional): section to track.
 
     Returns:
-        str: rss feed
+        Response: the RSS feed.
     """
-    _since = SINCE
-    if gh_auth.authorized:
-        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    commits = get_commits(
-        repo,
-        config_repo.get("articles_folder"),
-        _since,
-        shared_token=True,  # simulate a shared token usage to limit the length of the result
-        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-
+    commits = _commits_for(config_repo, folder)
+    if folder:
+        page_url = url_for(
+            "get_commits_from_section",
+            repo_owner=repo_owner,
+            repo_name=repo_name,
+            folder=folder,
+            _external=True,
+        )
+    else:
+        page_url = url_for(
+            "repo_home", repo_owner=repo_owner, repo_name=repo_name, _external=True
+        )
     return Response(
-        get_feed(commits, config_repo.get("articles_folder"), config_repo),
-        mimetype="text/xml",
+        get_feed(
+            commits,
+            folder or config_repo.get("articles_folder"),
+            config_repo,
+            page_url,
+        ),
+        mimetype="application/rss+xml",
     )
 
 
 @app.route("/api/<repo_owner>/<repo_name>")
-@login_management
-def repo_api(repo_owner: str, repo_name: str):
-    """RSS Feed of commits in the repository
-
-    Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
-
-    Returns:
-        str: rss feed
-    """
-    _since = SINCE
-    if gh_auth.authorized:
-        _since = int(request.args.get("since", SINCE))
-    config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    commits = get_commits(
-        repo,
-        config_repo.get("articles_folder"),
-        _since,
-        shared_token=True,  # simulate a shared token usage to limit the length of the result
-        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    return jsonify(commits)
-
-
-@app.route("/feed/<repo_owner>/<repo_name>/<path:folder>")
-@login_management
-def section_feed(repo_owner: str, repo_name: str, folder: str):
-    """RSS Feed of commits in a folder of the repository
-
-    Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
-        folder (str): section to track
-
-    Returns:
-        str: rss feed
-    """
-    _since = SINCE
-    if gh_auth.authorized:
-        _since = int(request.args.get("since", SINCE))
-    config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-
-    _folder_path = os.path.join(config_repo.get("articles_folder"), folder.lstrip("/"))
-    commits = get_commits(
-        repo,
-        _folder_path,
-        _since,
-        shared_token=True,  # simulate a shared token usage to limit the length of the result
-        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
-    )
-    return Response(get_feed(commits, folder, config_repo), mimetype="text/xml")
-
-
 @app.route("/api/<repo_owner>/<repo_name>/<path:folder>")
-@login_management
-def section_api(repo_owner: str, repo_name: str, folder: str):
-    """RSS Feed of commits in a folder of the repository
+def repo_api(repo_owner: str, repo_name: str, folder: str = None):
+    """JSON view of the commits of a repository or of one of its sections.
 
     Args:
-        repo_owner (str): GitHub repo owner.
-        repo_name (str): GitHub repo name.
-        folder (str): section to track
+        repo_owner (str): GitHub repository owner.
+        repo_name (str): GitHub repository name.
+        folder (str, optional): section to track.
 
     Returns:
-        str: rss feed
+        Response: the JSON response.
     """
-    _since = SINCE
-    if gh_auth.authorized:
-        _since = int(request.args.get("since", SINCE))
     config_repo = get_repo_config(repo_owner, repo_name)
-    repo = get_repo(
-        g,
-        config_repo=config_repo,
-        cache_key=f"{config_repo.get('name')}-{sha256(g.gh_token.encode()).hexdigest()}",
+    commits = _commits_for(config_repo, folder)
+    return _as_json(commits)
+
+
+# Issue #21: the RSS readers look for a favicon at the root of the domain.
+@app.route("/favicon.ico")
+def favicon():
+    """Serve the favicon from the static folder.
+
+    Returns:
+        Response: the favicon.
+    """
+    return send_from_directory(
+        os.path.join(app.root_path, "static"),
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
     )
 
-    _folder_path = os.path.join(config_repo.get("articles_folder"), folder.lstrip("/"))
-    commits = get_commits(
-        repo,
-        _folder_path,
-        _since,
-        shared_token=True,  # simulate a shared token usage to limit the length of the result
-        cache_key=f"{config_repo.get('name')}-track-{sha256(g.gh_token.encode()).hexdigest()}",
+
+@app.errorhandler(GitHubError)
+def github_error(error: GitHubError):
+    """Render the failures raised while talking to GitHub.
+
+    Args:
+        error (GitHubError): the raised error.
+
+    Returns:
+        tuple: the rendered page and its status code.
+    """
+    log.warning("GitHub error %s: %s", error.status_code, error.message)
+    return (
+        render_template(
+            "error.html", error_code=error.status_code, error_message=error.message
+        ),
+        error.status_code,
     )
-    return jsonify(commits)
+
+
+@app.errorhandler(HTTPException)
+def http_error(error: HTTPException):
+    """Render any HTTP error with the application layout.
+
+    Args:
+        error (HTTPException): the raised error.
+
+    Returns:
+        tuple: the rendered page and its status code.
+    """
+    log.info("%s: %s", error.code, error.description)
+    return (
+        render_template(
+            "error.html", error_code=error.code, error_message=error.description
+        ),
+        error.code,
+    )

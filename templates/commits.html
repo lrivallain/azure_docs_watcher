@@ -1,5 +1,13 @@
 {% extends "base.html" %}
+{% from "_macros.html" import repo_icon, view_toggle %}
 {% block title %}{{ folder }}{% endblock %}
+
+{% block feed_autodiscovery %}
+<link rel="alternate" type="application/rss+xml"
+  title="{{ repository.display_name }} changes in {{ folder }}"
+  href="/feed/{{ repository.name }}/{{ folder }}">
+{% endblock %}
+
 {% block content %}
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
@@ -8,96 +16,76 @@
     <li class="breadcrumb-item active" aria-current="page">{{ folder }}</li>
   </ol>
 </nav>
-<div class="row mb-3">
-  {% if repository.icon %}
-  <div class="col-1 text-center p-3">
-    <img src="{{ url_for('static', filename=repository.icon) }}" alt="Icon of {{ repository.display_name }} repository"
-      style="width:100%;">
-  </div>
-  {% endif %}
-  <div class="col">
-    <h2>
-      {{ repository.owner }}/{{ repository.repository }}{{ repository.articles_folder}}{{ folder }}
-    </h2>
-    <div class="btn-group btn-group-sm mt-1" role="group" aria-label="Actions">
+
+<div class="d-flex align-items-start gap-3 mb-3">
+  <div class="d-none d-sm-block">{{ repo_icon(repository, 'sm') }}</div>
+  <div class="flex-grow-1">
+    <h1 class="h4 text-break">
+      {{ repository.owner }}/{{ repository.repository }}{{ repository.articles_folder }}{{ folder }}
+    </h1>
+    <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Actions">
       <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
-        title="View this path on GitHub" class="btn btn-outline-primary">
-        <i class="bi bi-github"></i> View on GitHub</a>
-      <a href="/feed/{{ repository.name }}/{{ folder }}" title="RSS Feed of the last changes for this section"
-        class="btn btn-outline-primary">
-        <i class="bi bi-rss" style="color:#fd7e14;"></i> RSS Feed</a>
-      <a href="/api/{{ repository.name }}/{{ folder }}{% if session.username %}?since={{ since }}{% endif %}"
-        title="View the result as JSON formatted" class="btn btn-outline-primary">
-        <i class="bi bi-filetype-json"></i> View as JSON</a>
-      {% if session.username %}
-      <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#settingsModal">
-        <i class="bi bi-gear"></i> Settings
-      </button>
-      {% endif %}
+        rel="noopener" title="View this path on GitHub" class="btn btn-outline-primary">
+        <i class="bi bi-github"></i> GitHub</a>
+      <a href="/feed/{{ repository.name }}/{{ folder }}"
+        title="RSS feed of the latest changes for this section" class="btn btn-outline-primary">
+        <i class="bi bi-rss-fill text-warning"></i> RSS</a>
+      <a href="/api/{{ repository.name }}/{{ folder }}"
+        title="View the result as JSON" class="btn btn-outline-primary">
+        <i class="bi bi-filetype-json"></i> JSON</a>
     </div>
-    <p class="lead mt-2">
-      {% if commits|length >= 1 %}
-      {% if session.username %}
-      Last {{ commits|length }} commits over the last {{ since }} days:
-      {% else %}
-      Last {{ commits|length }} commits{% if commits|length < max_commits %} over the last {{ since }} days{% endif %}:
-        {% endif %} {% else %} No commit in the last {{ since }} days. {% endif %}</p>
   </div>
+  {% if commits %}{{ view_toggle() }}{% endif %}
 </div>
 
-{% if session.username %}
-<!-- Modal -->
-<form>
-  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Change default settings</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <label for="since" class="form-label">Number of days to look back for commits:</label>
-          <input type="range" id="sinceRangeInput" name="since" min="1" max="20" value="{{ since }}"
-            oninput="since_output.value=sinceRangeInput.value" class="form-range">
-          <div class="text-center strong">
-            <output id="since_output" name="since_output" for="sinceRangeInput">{{ since }}</output>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
-        </div>
-      </div>
-    </div>
+<p class="lead">
+  {% if commits %}
+  Last {{ commits|length }} commit{{ 's' if commits|length > 1 }} touching this section.
+  {% else %}
+  No commit found for this section.
+  {% endif %}
+</p>
+
+{% if commits|length >= feed_size %}
+<div class="alert alert-info d-flex gap-2 py-2" role="alert">
+  <i class="bi bi-info-circle flex-shrink-0"></i>
+  <div>
+    GitHub publishes commit feeds as a single page of {{ feed_size }} entries, so this list is
+    capped. Browse a more specific section, or open the history
+    <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
+      rel="noopener" class="alert-link">on GitHub</a>, to see everything.
   </div>
-</form>
+</div>
 {% endif %}
 
-<div class="row row-cols-auto">
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 view-collection">
   {% for commit in commits %}
-  <div class="col mb-3 col-12 col-md-4">
-    <div class="card h-100">
-      <h5 class="card-header">
-        <i class="bi bi-git"></i> {{ commit.sha }}
-      </h5>
-      <div class="card-body">
-        <figure>
-          <blockquote class="blockquote fs-6">
-            <p>{{ commit.message }}</p>
-          </blockquote>
-          <figcaption class="blockquote-footer">
-            {{ commit.author }} committed on {{ commit.date }}
-          </figcaption>
-        </figure>
+  <div class="col">
+    <div class="card h-100 commit-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="font-monospace" title="{{ commit.sha }}">
+          <i class="bi bi-git"></i> {{ commit.sha[:7] }}
+        </span>
+        {% if commit.date %}
+        <small class="text-body-secondary">
+          <time datetime="{{ commit.date.isoformat() }}">{{ commit.date.strftime('%Y-%m-%d %H:%M') }} UTC</time>
+        </small>
+        {% endif %}
       </div>
-      <div class="card-footer text-center">
-        <a href="{{ commit.url }}" target="_blank">
-          <i class="bi bi-github"></i> View commit
+      <div class="card-body">
+        <p class="card-text commit-message" title="{{ commit.message }}">{{ commit.message }}</p>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <small class="text-body-secondary text-truncate" title="{{ commit.author }}">
+          <i class="bi bi-person"></i> {{ commit.author or 'unknown' }}
+        </small>
+        <a href="{{ commit.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary"
+          title="View commit {{ commit.sha[:7] }} on GitHub">
+          <i class="bi bi-box-arrow-up-right"></i> View
         </a>
       </div>
     </div>
   </div>
   {% endfor %}
 </div>
-</main>
 {% endblock %}

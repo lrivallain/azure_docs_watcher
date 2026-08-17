@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import repo_icon, view_toggle %}
 {% block title %}Home{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb">
@@ -6,93 +7,115 @@
     <li class="breadcrumb-item active" aria-current="page">Home</li>
   </ol>
 </nav>
-<h2>
-  Azure Docs changes watcher
-</h2>
-<p class="lead">
-  Select a repository to list the content and watch for last documentation changes.
-</p>
-<div class="row row-cols-auto">
+<div class="d-flex align-items-start gap-3 mb-3">
+  <div class="flex-grow-1">
+    <h1 class="h2">Azure Docs changes watcher</h1>
+    <p class="lead mb-0">
+      Select a repository to browse its sections and follow the latest documentation changes,
+      as a web page, an RSS feed or JSON.
+    </p>
+  </div>
+  {{ view_toggle() }}
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 view-collection">
   {% for repository in repos %}
-  <div class="col mb-3 col-12 col-md-4">
-    <div class="card text-bg-light h-100 shadow">
-      <a href="/{{ repository.name }}" title="List the content and watch for last documentation changes">
-        <img src="{{ url_for('static', filename=repository.icon) }}" class="card-img-top img-fluid" alt="Icon of {{ repository.display_name }} repository" style="max-height:8rem;">
+  <div class="col">
+    <div class="card h-100 repo-card">
+      <a href="/{{ repository.name }}" title="Browse {{ repository.display_name }}"
+        class="d-block text-center text-decoration-none repo-icon-link">
+        {{ repo_icon(repository, 'lg') }}
       </a>
       <div class="card-body">
-        <h5 class="card-title">{{ repository.display_name }}</h5>
+        <h2 class="card-title h5">{{ repository.display_name }}</h2>
         <p class="card-text">
           <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
+            rel="noopener" class="link-secondary text-decoration-none"
             title="Visit the repository on GitHub">
             <i class="bi bi-github"></i>
             {{ repository.owner }}/{{ repository.repository }}
           </a>
         </p>
       </div>
-      <div class="card-footer">
-        <div class="row">
-          <div class="col">
-            <a href="/{{ repository.name }}" class="btn btn-primary">View content</a>
-          </div>
-          <div class="col text-end">
-            <a href="/feed/{{ repository.name }}" class="btn"
-            style="color:#fd7e14; padding: 0px;" title="RSS Feed of the last changes for this repository">
-            <i class="bi bi-rss h3"></i></a>
-          </div>
-        </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <a href="/{{ repository.name }}" class="btn btn-primary btn-sm"
+          title="Browse the sections of {{ repository.display_name }}">Browse sections</a>
+        <a href="/feed/{{ repository.name }}" class="btn btn-sm btn-outline-warning"
+          title="RSS feed of the latest changes for this repository">
+          <i class="bi bi-rss-fill"></i>
+          <span class="visually-hidden">RSS feed</span>
+        </a>
       </div>
     </div>
   </div>
   {% endfor %}
-  <div class="col mb-3 col-12 col-md-4">
-    <div class="card h-100 shadow">
-      <div class="card-header">
-        <h5>Custom repository</h5>
-      </div>
+
+  <div class="col">
+    <div class="card h-100 custom-repo-card">
       <div class="card-body">
-        <div class="alert alert-warning" role="alert" id="javascriptNeededWarning">
-          Javascript is required to use this feature.
+        <h2 class="card-title h5">
+          <i class="bi bi-plus-circle"></i> Any other repository
+        </h2>
+        <p class="card-text text-body-secondary">
+          Watch any public GitHub repository the same way.
+        </p>
+        <div class="alert alert-warning py-2 mb-3" role="alert" id="javascriptNeededWarning">
+          JavaScript is required to use this feature.
         </div>
+        <label for="customRepository" class="form-label visually-hidden">Repository</label>
         <div class="input-group">
-          <span class="input-group-text" id="customRepositoryHelp">https://github.com/</span>
-          <input type="text" class="form-control" id="customRepository" aria-describedby="customRepositoryHelp"
-          placeholder="MicrosoftDocs/azure-docs">
-          <div id="customRepositoryHelp" class="form-text">Enter the GitHub repository URI to see the content</div>
+          <span class="input-group-text">github.com/</span>
+          <input type="text" class="form-control" id="customRepository"
+            aria-describedby="customRepositoryHelp" placeholder="MicrosoftDocs/azure-docs"
+            autocomplete="off" spellcheck="false">
         </div>
-        <script>
-          window.addEventListener('load', (event) => {
-            $( "#customRepository" ).on( "input", function() {
-              var customRepository = String($(this).val());
-              if (customRepository.length > 0) {
-                // remove leading part of the URI if needed
-                if (customRepository.startsWith("https://github.com/")) {
-                  customRepository = customRepository.replace("https://github.com/", "");
-                  $(this).val(customRepository);
-                }
-              }
-              console.debug("Updating custom repository link herf to /" + $(this).val());
-              $( "#customRepositoryButton" ).attr("href", "/" + $(this).val());
-            });
-            // If the user press enter, redirect to the repository content
-            $("#customRepository").on("keydown", function(event) {
-              if(event.which == 13)
-                location.href = $( "#customRepositoryButton" ).attr("href");
-            });
-            // disable the javascript warning if javascript is enabled
-            $( "#javascriptNeededWarning" ).hide();
-            //  Triggering input event to update link herf based on previous value
-            $( "#customRepository" ).trigger( "input" );
-          });
-        </script>
+        <div id="customRepositoryHelp" class="form-text">
+          Paste an <code>owner/repository</code> pair or a full GitHub URL.
+        </div>
       </div>
       <div class="card-footer">
-        <div class="row">
-          <div class="col">
-            <a href="#" class="btn btn-primary" id="customRepositoryButton">View content</a>
-          </div>
-        </div>
+        <a href="#" class="btn btn-primary btn-sm disabled" id="customRepositoryButton"
+          title="Browse the sections of this repository" aria-disabled="true">Browse sections</a>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  (() => {
+    const input = document.getElementById('customRepository');
+    const button = document.getElementById('customRepositoryButton');
+    const warning = document.getElementById('javascriptNeededWarning');
+
+    warning.hidden = true;
+
+    /* Accept a bare `owner/repo`, a full URL, or a `.git` suffixed clone URL. */
+    const normalise = (value) => value
+      .trim()
+      .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+      .replace(/\.git$/i, '')
+      .replace(/^\/+|\/+$/g, '');
+
+    const sync = () => {
+      const value = normalise(input.value);
+      if (input.value !== value && !input.value.endsWith(' ')) {
+        input.value = value;
+      }
+      /* Only a full owner/repository pair can be browsed. */
+      const isValid = /^[^/\s]+\/[^/\s]+$/.test(value);
+      button.href = isValid ? `/${value}` : '#';
+      button.classList.toggle('disabled', !isValid);
+      button.setAttribute('aria-disabled', String(!isValid));
+    };
+
+    input.addEventListener('input', sync);
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !button.classList.contains('disabled')) {
+        event.preventDefault();
+        window.location.href = button.href;
+      }
+    });
+    sync();
+  })();
+</script>
 {% endblock %}
