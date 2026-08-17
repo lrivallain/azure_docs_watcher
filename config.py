@@ -25,9 +25,14 @@ USER_AGENT = os.getenv(
     "azure-docs-watcher (+https://github.com/lrivallain/azure_docs_watcher)",
 )
 
-# Azure Docs repo configuration
-
+# Watched repositories.
+#
+# Declaration order drives the order of the home page: the most broadly useful
+# products come first, niche and edge ones last. Microsoft has been splitting
+# MicrosoftDocs/azure-docs into per-domain repositories, so several services
+# that used to live there are watched through their own repository below.
 AZURE_DOCS_REPOS = {
+    # Core Azure platform
     "MicrosoftDocs/azure-docs": {
         "name": "MicrosoftDocs/azure-docs",
         "display_name": "Azure Docs",
@@ -36,32 +41,6 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure.svg",
     },
-    "MicrosoftDocs/azure-sql": {
-        "name": "MicrosoftDocs/azure-sql",
-        "display_name": "Azure SQL",
-        "owner": "MicrosoftDocs",
-        "repository": "sql-docs",
-        "articles_folder": "/azure-sql/",
-        "icon": "azure-icons/Azure-SQL.svg",
-    },
-    "MicrosoftDocs/azure-quantum": {
-        "name": "MicrosoftDocs/azure-quantum",
-        "display_name": "Azure Quantum (preview)",
-        "owner": "MicrosoftDocs",
-        "repository": "quantum-docs",
-        "articles_folder": "/articles/",
-        "icon": "azure-icons/Azure-Quantum.svg",
-    },
-    "Azure/iotedge": {
-        "name": "Azure/iotedge",
-        "display_name": "Azure IoT Edge",
-        "owner": "Azure",
-        "repository": "iotedge",
-        "articles_folder": "/doc/",
-        "icon": "azure-icons/IoT-Edge.svg",
-    },
-    # Content progressively split out of MicrosoftDocs/azure-docs: those
-    # services are no longer documented in the historical repository.
     "MicrosoftDocs/azure-compute-docs": {
         "name": "MicrosoftDocs/azure-compute-docs",
         "display_name": "Azure Compute",
@@ -86,6 +65,15 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/articles/",
         "glyph": "database",
     },
+    "MicrosoftDocs/azure-sql": {
+        "name": "MicrosoftDocs/azure-sql",
+        "display_name": "Azure SQL",
+        "owner": "MicrosoftDocs",
+        "repository": "sql-docs",
+        "articles_folder": "/azure-sql/",
+        "icon": "azure-icons/Azure-SQL.svg",
+    },
+    # AI and data
     "MicrosoftDocs/azure-ai-docs": {
         "name": "MicrosoftDocs/azure-ai-docs",
         "display_name": "Azure AI and Foundry",
@@ -94,21 +82,22 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/articles/",
         "glyph": "robot",
     },
-    "MicrosoftDocs/azure-monitor-docs": {
-        "name": "MicrosoftDocs/azure-monitor-docs",
-        "display_name": "Azure Monitor",
+    "MicrosoftDocs/fabric-docs": {
+        "name": "MicrosoftDocs/fabric-docs",
+        "display_name": "Microsoft Fabric",
         "owner": "MicrosoftDocs",
-        "repository": "azure-monitor-docs",
-        "articles_folder": "/articles/",
-        "glyph": "graph-up-arrow",
+        "repository": "fabric-docs",
+        "articles_folder": "/docs/",
+        "glyph": "diagram-3",
     },
-    "MicrosoftDocs/azure-security-docs": {
-        "name": "MicrosoftDocs/azure-security-docs",
-        "display_name": "Azure Security",
+    # Identity, security and operations
+    "MicrosoftDocs/entra-docs": {
+        "name": "MicrosoftDocs/entra-docs",
+        "display_name": "Microsoft Entra",
         "owner": "MicrosoftDocs",
-        "repository": "azure-security-docs",
-        "articles_folder": "/articles/",
-        "glyph": "shield-lock",
+        "repository": "entra-docs",
+        "articles_folder": "/docs/",
+        "glyph": "person-badge",
     },
     "MicrosoftDocs/defender-docs": {
         "name": "MicrosoftDocs/defender-docs",
@@ -119,22 +108,23 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/",
         "glyph": "shield-check",
     },
-    "MicrosoftDocs/entra-docs": {
-        "name": "MicrosoftDocs/entra-docs",
-        "display_name": "Microsoft Entra",
+    "MicrosoftDocs/azure-security-docs": {
+        "name": "MicrosoftDocs/azure-security-docs",
+        "display_name": "Azure Security",
         "owner": "MicrosoftDocs",
-        "repository": "entra-docs",
-        "articles_folder": "/docs/",
-        "glyph": "person-badge",
+        "repository": "azure-security-docs",
+        "articles_folder": "/articles/",
+        "glyph": "shield-lock",
     },
-    "MicrosoftDocs/fabric-docs": {
-        "name": "MicrosoftDocs/fabric-docs",
-        "display_name": "Microsoft Fabric",
+    "MicrosoftDocs/azure-monitor-docs": {
+        "name": "MicrosoftDocs/azure-monitor-docs",
+        "display_name": "Azure Monitor",
         "owner": "MicrosoftDocs",
-        "repository": "fabric-docs",
-        "articles_folder": "/docs/",
-        "glyph": "diagram-3",
+        "repository": "azure-monitor-docs",
+        "articles_folder": "/articles/",
+        "glyph": "graph-up-arrow",
     },
+    # Guidance
     "MicrosoftDocs/architecture-center": {
         "name": "MicrosoftDocs/architecture-center",
         "display_name": "Azure Architecture Center",
@@ -151,6 +141,7 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/docs/",
         "glyph": "map",
     },
+    # Developer and platform tooling
     "MicrosoftDocs/azure-dev-docs": {
         "name": "MicrosoftDocs/azure-dev-docs",
         "display_name": "Azure for Developers",
@@ -158,14 +149,6 @@ AZURE_DOCS_REPOS = {
         "repository": "azure-dev-docs",
         "articles_folder": "/articles/",
         "glyph": "code-slash",
-    },
-    "MicrosoftDocs/memdocs": {
-        "name": "MicrosoftDocs/memdocs",
-        "display_name": "Microsoft Intune",
-        "owner": "MicrosoftDocs",
-        "repository": "memdocs",
-        "articles_folder": "/intune/",
-        "glyph": "phone",
     },
     "MicrosoftDocs/azure-devops-docs": {
         "name": "MicrosoftDocs/azure-devops-docs",
@@ -175,6 +158,15 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/docs/",
         "glyph": "infinity",
     },
+    # Endpoint, hybrid and edge
+    "MicrosoftDocs/memdocs": {
+        "name": "MicrosoftDocs/memdocs",
+        "display_name": "Microsoft Intune",
+        "owner": "MicrosoftDocs",
+        "repository": "memdocs",
+        "articles_folder": "/intune/",
+        "glyph": "phone",
+    },
     "MicrosoftDocs/azure-stack-docs": {
         "name": "MicrosoftDocs/azure-stack-docs",
         "display_name": "Azure Local",
@@ -183,6 +175,23 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/azure-local/",
         "glyph": "hdd-stack",
     },
+    "Azure/iotedge": {
+        "name": "Azure/iotedge",
+        "display_name": "Azure IoT Edge",
+        "owner": "Azure",
+        "repository": "iotedge",
+        "articles_folder": "/doc/",
+        "icon": "azure-icons/IoT-Edge.svg",
+    },
+    "MicrosoftDocs/azure-quantum": {
+        "name": "MicrosoftDocs/azure-quantum",
+        "display_name": "Azure Quantum",
+        "owner": "MicrosoftDocs",
+        "repository": "quantum-docs",
+        "articles_folder": "/articles/",
+        "icon": "azure-icons/Azure-Quantum.svg",
+    },
+    # This very application
     "lrivallain/azure_docs_watcher": {
         "name": "lrivallain/azure_docs_watcher",
         "display_name": "Azure Docs Watcher",
