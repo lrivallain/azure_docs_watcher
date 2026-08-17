@@ -66,7 +66,6 @@ Everything is optional; the application starts with no environment variable set.
 
 | Variable                     | Default | Description                                        |
 | ---------------------------- | ------- | -------------------------------------------------- |
-| `AZDOCSWATCH_MAX_COMMITS`    | `20`    | Commits returned per section (capped at 20)        |
 | `AZDOCSWATCH_CACHE_SIZE`     | `1024`  | Maximum number of cache entries                    |
 | `AZDOCSWATCH_CACHE_TTL`      | `600`   | Base cache lifetime, in seconds                    |
 | `AZDOCSWATCH_HTTP_TIMEOUT`   | `10`    | Timeout of the calls to GitHub, in seconds         |

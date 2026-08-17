@@ -24,7 +24,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import github_client
-from config import AZURE_DOCS_REPOS, MAX_COMMITS
+from config import ATOM_FEED_SIZE, AZURE_DOCS_REPOS
 from errors import GitHubError
 from feeds import get_feed
 from utils import get_repo_config
@@ -71,7 +71,6 @@ def _commits_for(config_repo: dict, folder: str = None) -> list:
         owner=config_repo["owner"],
         repository=config_repo["repository"],
         path=_join_path(config_repo.get("articles_folder"), folder),
-        max_commits=MAX_COMMITS,
     )
 
 
@@ -102,7 +101,6 @@ def home():
     return render_template(
         "home.html",
         repos=list(AZURE_DOCS_REPOS.values()),
-        max_commits=MAX_COMMITS,
     )
 
 
@@ -127,7 +125,6 @@ def repo_home(repo_owner: str, repo_name: str):
         "repo_home.html",
         repository=config_repo,
         contents=contents,
-        max_commits=MAX_COMMITS,
     )
 
 
@@ -150,7 +147,7 @@ def get_commits_from_section(repo_owner: str, repo_name: str, folder: str):
         repository=config_repo,
         folder=folder,
         commits=commits,
-        max_commits=MAX_COMMITS,
+        feed_size=ATOM_FEED_SIZE,
     )
 
 

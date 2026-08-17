@@ -1,0 +1,18 @@
+/* Commit cards highlight themselves when pointed at or keyboard focused. */
+.commit-card {
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+.commit-card:hover,
+.commit-card:focus-within {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commit-card {
+    transition: none;
+  }
+}

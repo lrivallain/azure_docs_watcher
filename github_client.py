@@ -13,9 +13,8 @@ personal access token lifetimes to a few days, which used to make the
 deployment depend on a recurring manual token renewal.
 
 Known limitation: GitHub serves commit feeds as a single, non paginated page of
-at most 20 entries and offers no date filter, so the look-back window is
-applied client side and can never return more than ``ATOM_MAX_COMMITS``
-commits.
+at most 20 entries and offers no date filter, so a path cannot expose more
+history than that.
 
 This module deliberately has no Flask dependency so it can be tested on its own.
 """
@@ -282,14 +281,15 @@ def _get_feed_commits(owner: str, repository: str, path: str) -> tuple:
     return tuple(commits)
 
 
-def get_commits(owner: str, repository: str, path: str, max_commits: int) -> list:
+def get_commits(owner: str, repository: str, path: str) -> list:
     """List the recent commits touching a path of a public repository.
+
+    GitHub caps the feed itself, so no additional limit is applied here.
 
     Args:
         owner (str): repository owner.
         repository (str): repository name.
         path (str): path within the repository to watch.
-        max_commits (int): maximum number of commits to return.
 
     Raises:
         GitHubError: when GitHub cannot be reached or the path does not exist.
@@ -301,7 +301,7 @@ def get_commits(owner: str, repository: str, path: str, max_commits: int) -> lis
     # GitHub ever returns the entries out of order.
     commits = [dict(commit) for commit in _get_feed_commits(owner, repository, path)]
     commits.sort(key=lambda commit: commit["date"], reverse=True)
-    return commits[:max_commits]
+    return commits
 
 
 @cached(_directory_cache, lock=_directory_lock)

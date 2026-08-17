@@ -7,11 +7,10 @@ APP_AUTHOR = "Ludovic Rivallain"
 APP_AUTHOR_EMAIL = "ludovic . rivallain @ gmail . com"
 APP_DESCRIPTION = "Track changes in __repo__ documentation articles"
 
-# Performances limits
-# GitHub serves commit Atom feeds as a single, non paginated page of 20 entries
-# and offers no date filter, so no visitor can ever get more commits than this.
-ATOM_MAX_COMMITS = 20
-MAX_COMMITS = min(int(os.getenv("AZDOCSWATCH_MAX_COMMITS", 20)), ATOM_MAX_COMMITS)
+# GitHub serves commit Atom feeds as a single, non paginated page of this many
+# entries, with no date filter. Nothing can raise that ceiling, so it is not
+# configurable: it only serves to tell visitors when a listing is capped.
+ATOM_FEED_SIZE = 20
 
 # Cache configuration
 CACHE_SIZE = int(os.getenv("AZDOCSWATCH_CACHE_SIZE", 1024))

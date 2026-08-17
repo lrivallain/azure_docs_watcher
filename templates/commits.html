@@ -47,11 +47,11 @@
   {% endif %}
 </p>
 
-{% if commits|length >= max_commits %}
+{% if commits|length >= feed_size %}
 <div class="alert alert-info d-flex gap-2 py-2" role="alert">
   <i class="bi bi-info-circle flex-shrink-0"></i>
   <div>
-    GitHub publishes commit feeds as a single page of {{ max_commits }} entries, so this list is
+    GitHub publishes commit feeds as a single page of {{ feed_size }} entries, so this list is
     capped. Browse a more specific section, or open the history
     <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
       rel="noopener" class="alert-link">on GitHub</a>, to see everything.
@@ -62,7 +62,7 @@
 <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
   {% for commit in commits %}
   <div class="col">
-    <div class="card h-100">
+    <div class="card h-100 commit-card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <span class="font-monospace" title="{{ commit.sha }}">
           <i class="bi bi-git"></i> {{ commit.sha[:7] }}
