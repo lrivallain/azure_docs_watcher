@@ -29,37 +29,21 @@
       <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}" target="_blank"
         rel="noopener" title="View this path on GitHub" class="btn btn-outline-primary">
         <i class="bi bi-github"></i> GitHub</a>
-      <a href="/feed/{{ repository.name }}/{{ folder }}?since={{ since }}"
+      <a href="/feed/{{ repository.name }}/{{ folder }}"
         title="RSS feed of the latest changes for this section" class="btn btn-outline-primary">
         <i class="bi bi-rss-fill text-warning"></i> RSS</a>
-      <a href="/api/{{ repository.name }}/{{ folder }}?since={{ since }}"
+      <a href="/api/{{ repository.name }}/{{ folder }}"
         title="View the result as JSON" class="btn btn-outline-primary">
         <i class="bi bi-filetype-json"></i> JSON</a>
     </div>
   </div>
 </div>
 
-<form method="get" class="row row-cols-lg-auto g-2 align-items-center mb-3">
-  <div class="col-12">
-    <label for="sinceRangeInput" class="col-form-label">Look back over</label>
-  </div>
-  <div class="col-12 d-flex align-items-center gap-2">
-    <input type="range" id="sinceRangeInput" name="since" min="1" max="{{ max_since }}" value="{{ since }}"
-      class="form-range" style="min-width:12rem;"
-      oninput="document.getElementById('sinceOutput').value = this.value">
-    <output id="sinceOutput" for="sinceRangeInput" class="fw-semibold">{{ since }}</output>
-    <span>days</span>
-  </div>
-  <div class="col-12">
-    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-  </div>
-</form>
-
 <p class="lead">
   {% if commits %}
-  {{ commits|length }} commit{{ 's' if commits|length > 1 }} over the last {{ since }} days.
+  Last {{ commits|length }} commit{{ 's' if commits|length > 1 }} touching this section.
   {% else %}
-  No commit in the last {{ since }} days.
+  No commit found for this section.
   {% endif %}
 </p>
 

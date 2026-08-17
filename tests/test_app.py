@@ -101,11 +101,11 @@ def test_api_returns_iso_dates(client):
 
 
 @responses.activate
-def test_since_is_clamped_to_the_supported_range(client):
+def test_a_legacy_since_parameter_is_ignored_rather_than_failing(client):
     register_section()
-    # 9999 days is out of range and must not raise.
+    # Old bookmarks and feed subscriptions still carry ?since=, which must not
+    # break now that the whole feed is always returned.
     assert client.get("/MicrosoftDocs/azure-docs/aks?since=9999").status_code == 200
-    assert client.get("/MicrosoftDocs/azure-docs/aks?since=-3").status_code == 200
     assert client.get("/MicrosoftDocs/azure-docs/aks?since=abc").status_code == 200
 
 

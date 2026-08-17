@@ -60,7 +60,7 @@ def test_commits_are_parsed_from_the_feed():
         status=200,
     )
     commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
     assert len(commits) == 1
     assert commits[0]["sha"] == "b" * 40
@@ -78,7 +78,7 @@ def test_multiline_message_is_taken_from_the_content_not_the_title():
         responses.GET, FEED_URL, body=atom_feed(atom_entry(message=message)), status=200
     )
     commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
     # The <pre> content is HTML escaped by GitHub and must be unescaped once.
     assert commits[0]["message"] == message
@@ -94,27 +94,30 @@ def test_author_falls_back_to_the_email_local_part():
         status=200,
     )
     commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
     assert commits[0]["author"] == "ghost"
 
 
 @responses.activate
-def test_commits_older_than_the_window_are_dropped():
+def test_old_commits_are_still_returned():
+    # The feed holds at most 20 entries and cannot be paginated, so filtering
+    # them by date could only ever hide history: a quiet section must still
+    # show when it last changed.
     register_branch()
     responses.add(
         responses.GET,
         FEED_URL,
         body=atom_feed(
             atom_entry(sha="c" * 40, updated=days_ago(1))
-            + atom_entry(sha="d" * 40, updated=days_ago(40))
+            + atom_entry(sha="d" * 40, updated=days_ago(900))
         ),
         status=200,
     )
     commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
-    assert [commit["sha"] for commit in commits] == ["c" * 40]
+    assert [commit["sha"] for commit in commits] == ["c" * 40, "d" * 40]
 
 
 @responses.activate
@@ -130,7 +133,7 @@ def test_commits_are_returned_most_recent_first():
         status=200,
     )
     commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
     assert [commit["sha"] for commit in commits] == ["f" * 40, "e" * 40]
 
@@ -141,22 +144,22 @@ def test_commits_are_capped_to_max_commits():
     entries = "".join(atom_entry(sha=f"{index:040d}") for index in range(20))
     responses.add(responses.GET, FEED_URL, body=atom_feed(entries), status=200)
     commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=3
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=3
     )
     assert len(commits) == 3
 
 
 @responses.activate
-def test_the_feed_is_fetched_once_for_several_windows():
+def test_the_feed_is_fetched_once_for_repeated_calls():
     register_branch()
     responses.add(responses.GET, FEED_URL, body=atom_feed(atom_entry()), status=200)
     github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=1, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
     github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=30, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
-    # One branch lookup and one feed fetch, shared by both windows.
+    # One branch lookup and one feed fetch, shared by both calls.
     assert len(responses.calls) == 2
 
 
@@ -164,9 +167,7 @@ def test_the_feed_is_fetched_once_for_several_windows():
 def test_an_empty_path_targets_the_repository_root():
     register_branch()
     responses.add(responses.GET, ROOT_FEED_URL, body=atom_feed(atom_entry()), status=200)
-    commits = github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "", since=5, max_commits=20
-    )
+    commits = github_client.get_commits("MicrosoftDocs", "azure-docs", "", max_commits=20)
     assert len(commits) == 1
 
 
@@ -176,7 +177,7 @@ def test_a_missing_path_is_reported_as_a_404():
     responses.add(responses.GET, FEED_URL, body="Not Found", status=404)
     with pytest.raises(GitHubError) as excinfo:
         github_client.get_commits(
-            "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+            "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
         )
     assert excinfo.value.status_code == 404
 
@@ -229,7 +230,7 @@ def test_no_credential_is_ever_sent():
     register_branch()
     responses.add(responses.GET, FEED_URL, body=atom_feed(atom_entry()), status=200)
     github_client.get_commits(
-        "MicrosoftDocs", "azure-docs", "articles/aks", since=5, max_commits=20
+        "MicrosoftDocs", "azure-docs", "articles/aks", max_commits=20
     )
     for call in responses.calls:
         assert "Authorization" not in call.request.headers

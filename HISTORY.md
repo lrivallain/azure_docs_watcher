@@ -20,8 +20,12 @@
 * JSON dates are now ISO-8601 instead of RFC 822.
 * JSON commit messages and author names are no longer HTML escaped, and `sha` is
   the full sha instead of the short one.
-* The `since` parameter is now available to every visitor, bounded by
-  `AZDOCSWATCH_MAX_SINCE`.
+* The `since` parameter was removed, along with `AZDOCSWATCH_SINCE` and
+  `AZDOCSWATCH_MAX_SINCE`. GitHub caps commit feeds at 20 non paginated entries,
+  so a look-back window could only ever hide results: every view now returns the
+  20 most recent commits. A quiet section shows when it actually last changed
+  instead of reporting no activity. Existing `?since=` links keep working, the
+  parameter is simply ignored.
 
 ### Fixed
 

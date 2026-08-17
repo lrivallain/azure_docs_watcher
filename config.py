@@ -8,10 +8,10 @@ APP_AUTHOR_EMAIL = "ludovic . rivallain @ gmail . com"
 APP_DESCRIPTION = "Track changes in __repo__ documentation articles"
 
 # Performances limits
-SINCE = int(os.getenv("AZDOCSWATCH_SINCE", 5))
-MAX_COMMITS = int(os.getenv("AZDOCSWATCH_MAX_COMMITS", 20))
-# Upper bound accepted for the ``since`` query string parameter.
-MAX_SINCE = int(os.getenv("AZDOCSWATCH_MAX_SINCE", 30))
+# GitHub serves commit Atom feeds as a single, non paginated page of 20 entries
+# and offers no date filter, so no visitor can ever get more commits than this.
+ATOM_MAX_COMMITS = 20
+MAX_COMMITS = min(int(os.getenv("AZDOCSWATCH_MAX_COMMITS", 20)), ATOM_MAX_COMMITS)
 
 # Cache configuration
 CACHE_SIZE = int(os.getenv("AZDOCSWATCH_CACHE_SIZE", 1024))
@@ -25,11 +25,6 @@ USER_AGENT = os.getenv(
     "AZDOCSWATCH_USER_AGENT",
     "azure-docs-watcher (+https://github.com/lrivallain/azure_docs_watcher)",
 )
-
-# GitHub serves commit Atom feeds as a single, non paginated page of 20 entries
-# and offers no date filter, so no visitor can ever get more commits than this.
-ATOM_MAX_COMMITS = 20
-MAX_COMMITS = min(MAX_COMMITS, ATOM_MAX_COMMITS)
 
 # Azure Docs repo configuration
 

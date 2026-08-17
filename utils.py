@@ -2,7 +2,7 @@
 
 import logging
 
-from config import AZURE_DOCS_REPOS, MAX_SINCE, SINCE
+from config import AZURE_DOCS_REPOS
 
 log = logging.getLogger(__name__)
 
@@ -36,22 +36,3 @@ def get_repo_config(repo_owner: str, repo_name: str) -> dict:
         "articles_folder": "/",
         "icon": "",
     }
-
-
-def resolve_since(raw_value: str) -> int:
-    """Clamp a user supplied look-back window to a supported value.
-
-    Args:
-        raw_value (str): raw ``since`` query string parameter, may be None.
-
-    Returns:
-        int: a number of days between 1 and ``MAX_SINCE``.
-    """
-    if raw_value is None:
-        return SINCE
-    try:
-        since = int(raw_value)
-    except (TypeError, ValueError):
-        log.debug("Ignoring invalid since value: %r", raw_value)
-        return SINCE
-    return max(1, min(since, MAX_SINCE))

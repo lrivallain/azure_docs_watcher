@@ -15,7 +15,6 @@ from flask import (
     Response,
     jsonify,
     render_template,
-    request,
     send_from_directory,
     url_for,
 )
@@ -25,10 +24,10 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import github_client
-from config import AZURE_DOCS_REPOS, MAX_COMMITS, MAX_SINCE, SINCE
+from config import AZURE_DOCS_REPOS, MAX_COMMITS
 from errors import GitHubError
 from feeds import get_feed
-from utils import get_repo_config, resolve_since
+from utils import get_repo_config
 
 log = logging.getLogger(__name__)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -58,25 +57,22 @@ def _join_path(prefix: str, folder: str = None) -> str:
     return "/".join(part for part in parts if part)
 
 
-def _commits_for(config_repo: dict, folder: str = None) -> tuple:
-    """Collect the commits of a section, along with the resolved window.
+def _commits_for(config_repo: dict, folder: str = None) -> list:
+    """Collect the most recent commits of a section.
 
     Args:
         config_repo (dict): repository configuration.
         folder (str, optional): the watched section.
 
     Returns:
-        tuple: the list of commits and the number of days actually used.
+        list: the commits, most recent first.
     """
-    since = resolve_since(request.args.get("since"))
-    commits = github_client.get_commits(
+    return github_client.get_commits(
         owner=config_repo["owner"],
         repository=config_repo["repository"],
         path=_join_path(config_repo.get("articles_folder"), folder),
-        since=since,
         max_commits=MAX_COMMITS,
     )
-    return commits, since
 
 
 def _as_json(commits: list) -> Response:
@@ -106,7 +102,6 @@ def home():
     return render_template(
         "home.html",
         repos=list(AZURE_DOCS_REPOS.values()),
-        since=SINCE,
         max_commits=MAX_COMMITS,
     )
 
@@ -132,7 +127,6 @@ def repo_home(repo_owner: str, repo_name: str):
         "repo_home.html",
         repository=config_repo,
         contents=contents,
-        since=SINCE,
         max_commits=MAX_COMMITS,
     )
 
@@ -150,15 +144,13 @@ def get_commits_from_section(repo_owner: str, repo_name: str, folder: str):
         str: html page.
     """
     config_repo = get_repo_config(repo_owner, repo_name)
-    commits, since = _commits_for(config_repo, folder)
+    commits = _commits_for(config_repo, folder)
     return render_template(
         "commits.html",
         repository=config_repo,
         folder=folder,
         commits=commits,
         max_commits=MAX_COMMITS,
-        max_since=MAX_SINCE,
-        since=since,
     )
 
 
@@ -176,7 +168,7 @@ def repo_feed(repo_owner: str, repo_name: str, folder: str = None):
         Response: the RSS feed.
     """
     config_repo = get_repo_config(repo_owner, repo_name)
-    commits, _ = _commits_for(config_repo, folder)
+    commits = _commits_for(config_repo, folder)
     if folder:
         page_url = url_for(
             "get_commits_from_section",
@@ -214,7 +206,7 @@ def repo_api(repo_owner: str, repo_name: str, folder: str = None):
         Response: the JSON response.
     """
     config_repo = get_repo_config(repo_owner, repo_name)
-    commits, _ = _commits_for(config_repo, folder)
+    commits = _commits_for(config_repo, folder)
     return _as_json(commits)
 
 

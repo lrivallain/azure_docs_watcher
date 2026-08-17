@@ -249,8 +249,8 @@ def _commit_from_entry(entry: ElementTree.Element) -> dict:
 def _get_feed_commits(owner: str, repository: str, path: str) -> tuple:
     """Fetch and parse the whole commit feed of a path.
 
-    The result is cached independently of any look-back window so that all the
-    ``since`` values requested by visitors share a single upstream fetch.
+    The result is cached so that concurrent visitors share a single upstream
+    fetch.
 
     Args:
         owner (str): repository owner.
@@ -282,16 +282,13 @@ def _get_feed_commits(owner: str, repository: str, path: str) -> tuple:
     return tuple(commits)
 
 
-def get_commits(
-    owner: str, repository: str, path: str, since: int, max_commits: int
-) -> list:
+def get_commits(owner: str, repository: str, path: str, max_commits: int) -> list:
     """List the recent commits touching a path of a public repository.
 
     Args:
         owner (str): repository owner.
         repository (str): repository name.
         path (str): path within the repository to watch.
-        since (int): number of days to look back for.
         max_commits (int): maximum number of commits to return.
 
     Raises:
@@ -300,16 +297,10 @@ def get_commits(
     Returns:
         list: the matching commits, most recent first.
     """
-    reference_date = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=since)
-    # The feed is normally ordered, but filtering every entry rather than
-    # stopping at the first old one keeps the result correct either way.
-    commits = [
-        dict(commit)
-        for commit in _get_feed_commits(owner, repository, path)
-        if commit["date"] >= reference_date
-    ]
+    # The feed is normally ordered, but sorting keeps the result correct even if
+    # GitHub ever returns the entries out of order.
+    commits = [dict(commit) for commit in _get_feed_commits(owner, repository, path)]
     commits.sort(key=lambda commit: commit["date"], reverse=True)
-    log.debug("%s commits kept over the last %s days", len(commits), since)
     return commits[:max_commits]
 
 

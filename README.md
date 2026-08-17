@@ -52,9 +52,9 @@ through public endpoints removes that dependency entirely.
 ## Known limitation
 
 GitHub serves commit feeds as a **single, non paginated page of 20 entries**,
-with no date filter. A section can therefore never show more than 20 commits,
-and on a very active path — the root of `azure-docs` receives 40 to 120 commits
-a day — those 20 entries may only span a few hours.
+with no date filter. A section therefore always shows its 20 most recent
+commits, and on a very active path — the root of `azure-docs` receives 40 to 120
+commits a day — those 20 entries may only span a few hours.
 
 Watching a more specific section gives a much longer window. The previous
 token-based implementation was capped at 20 commits too, so this is not a
@@ -66,9 +66,7 @@ Everything is optional; the application starts with no environment variable set.
 
 | Variable                     | Default | Description                                        |
 | ---------------------------- | ------- | -------------------------------------------------- |
-| `AZDOCSWATCH_SINCE`          | `5`     | Default look-back window, in days                  |
 | `AZDOCSWATCH_MAX_COMMITS`    | `20`    | Commits returned per section (capped at 20)        |
-| `AZDOCSWATCH_MAX_SINCE`      | `30`    | Upper bound accepted for the `since` parameter     |
 | `AZDOCSWATCH_CACHE_SIZE`     | `1024`  | Maximum number of cache entries                    |
 | `AZDOCSWATCH_CACHE_TTL`      | `600`   | Base cache lifetime, in seconds                    |
 | `AZDOCSWATCH_HTTP_TIMEOUT`   | `10`    | Timeout of the calls to GitHub, in seconds         |
@@ -122,4 +120,4 @@ with `azure/login@v3` removes that long-lived secret and is recommended.
 | `/feed/<owner>/<repo>[/<section>]` | RSS feed                         |
 | `/api/<owner>/<repo>[/<section>]`  | JSON output                      |
 
-All of them accept a `?since=<days>` parameter.
+Every view returns the 20 most recent commits of the path.
