@@ -45,6 +45,10 @@
 ### Changed
 
 * Every button carries a styled tooltip, built from its title attribute.
+* Card shadows and paddings moved out of Bootstrap's utility classes. Those are
+  declared !important, so `.shadow-sm` was silently winning over both the hover
+  ring of the grid and the underline of the table view: repository cards showed
+  neither, while commit cards showed both.
 * In the table view, the row under the pointer is underlined with the accent
   colour and tinted, the same way a card highlights itself in the grid.
 * The repository list and the commit list can be shown as a grid of cards or as

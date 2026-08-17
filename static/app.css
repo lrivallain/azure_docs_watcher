@@ -40,6 +40,14 @@
   margin-bottom: 0;
 }
 
+/* The drop shadow lives here rather than in Bootstrap's .shadow-sm utility:
+   utilities are !important, so it would win over both the hover ring below and
+   the underline of the table view. */
+.repo-card,
+.custom-repo-card {
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
 /* Cards highlight themselves when pointed at or keyboard focused. */
 .commit-card,
 .repo-card {
@@ -95,6 +103,14 @@
 
   [data-view="list"] .view-collection > *:last-child :is(.repo-card, .commit-card) {
     border-bottom: 0;
+  }
+
+  /* The custom repository card is not a row: keep it flat inside the frame. */
+  [data-view="list"] .view-collection .custom-repo-card {
+    box-shadow: none;
+    border-radius: 0;
+    border-width: 0;
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
   }
 
   /* A row highlight reads better than a floating ring in a table, with the
