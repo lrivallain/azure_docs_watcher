@@ -44,6 +44,11 @@
 
 ### Changed
 
+* The repository list and the commit list can be shown as a grid of cards or as
+  a dense table. The choice is stored locally and applies to both pages, and is
+  restored before the first paint so the layout does not flicker.
+* Long commit messages are clamped, so that a single 80 line merge message no
+  longer stretches every card of its row to thousands of pixels.
 * Pre-configured 15 more documentation repositories. Microsoft has been
   splitting `MicrosoftDocs/azure-docs` into per-domain repositories, so virtual
   machines, AKS, Cosmos DB, Monitor, AI services, machine learning and Defender

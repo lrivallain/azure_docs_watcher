@@ -34,6 +34,7 @@ an **RSS feed** or **JSON**.
 * RSS feed for every repository and every section (#7), with feed autodiscovery
 * JSON output for API consumption (#23)
 * Caching to keep the service fast and light on GitHub (#9)
+* Grid or dense table layout, remembered across pages and visits
 * Light and dark theme, following your system preference (#19)
 * **No GitHub account, token or login required — anywhere**
 

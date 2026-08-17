@@ -1,12 +1,26 @@
 {# Renders a repository icon: its SVG when it has one, a Bootstrap glyph
    otherwise. Keeping it in one place avoids the unguarded <img> that produced a
-   broken image for repositories without an icon. #}
-{% macro repo_icon(repository, size) %}
+   broken image for repositories without an icon.
+   `variant` is `lg` or `sm`; the list view shrinks it further through CSS. #}
+{% macro repo_icon(repository, variant) %}
 {% if repository.icon %}
-<img src="{{ url_for('static', filename=repository.icon) }}" alt=""
-  style="width:{{ size }};height:{{ size }};object-fit:contain;">
+<img class="repo-icon repo-icon-{{ variant }}" src="{{ url_for('static', filename=repository.icon) }}" alt="">
 {% else %}
-<i class="bi bi-{{ repository.glyph or 'journal-code' }} text-body-secondary d-inline-block text-center"
-  style="font-size:calc({{ size }} * 0.8);width:{{ size }};line-height:{{ size }};" aria-hidden="true"></i>
+<i class="bi bi-{{ repository.glyph or 'journal-code' }} repo-icon repo-icon-{{ variant }} text-body-secondary"
+  aria-hidden="true"></i>
 {% endif %}
+{% endmacro %}
+
+{# Grid / list switch. The choice is stored once and applies to every page. #}
+{% macro view_toggle() %}
+<div class="btn-group btn-group-sm view-toggle" role="group" aria-label="Display layout">
+  <button type="button" class="btn btn-outline-secondary" data-view-choice="grid" title="Grid view">
+    <i class="bi bi-grid-3x3-gap-fill" aria-hidden="true"></i>
+    <span class="visually-hidden">Grid view</span>
+  </button>
+  <button type="button" class="btn btn-outline-secondary" data-view-choice="list" title="Table view">
+    <i class="bi bi-table" aria-hidden="true"></i>
+    <span class="visually-hidden">Table view</span>
+  </button>
+</div>
 {% endmacro %}

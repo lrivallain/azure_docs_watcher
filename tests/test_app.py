@@ -68,6 +68,22 @@ def test_section_page_advertises_its_feed(client):
     assert b"/feed/MicrosoftDocs/azure-docs/aks" in response.data
 
 
+def test_home_offers_the_layout_toggle(client):
+    response = client.get("/")
+    assert b'data-view-choice="grid"' in response.data
+    assert b'data-view-choice="list"' in response.data
+    assert b"view-collection" in response.data
+
+
+@responses.activate
+def test_section_page_offers_the_layout_toggle(client):
+    register_section()
+    response = client.get("/MicrosoftDocs/azure-docs/aks")
+    assert b'data-view-choice="grid"' in response.data
+    assert b'data-view-choice="list"' in response.data
+    assert b"view-collection" in response.data
+
+
 @responses.activate
 def test_feed_is_served_as_rss(client):
     register_section()

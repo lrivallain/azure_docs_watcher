@@ -22,12 +22,14 @@
 
   <title>{% block title %}{% endblock %} – Azure docs changes watcher</title>
 
-  {# Applied before the first paint to avoid flashing the wrong colour scheme. #}
+  {# Applied before the first paint to avoid flashing the wrong colour scheme
+     or the wrong layout. #}
   <script>
     (() => {
       const stored = localStorage.getItem('theme');
       const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       document.documentElement.setAttribute('data-bs-theme', stored || preferred);
+      document.documentElement.setAttribute('data-view', localStorage.getItem('view') || 'grid');
     })();
   </script>
 </head>
@@ -116,6 +118,33 @@
         if (localStorage.getItem('theme')) return;
         root.setAttribute('data-bs-theme', event.matches ? 'dark' : 'light');
         render();
+      });
+
+      render();
+    })();
+  </script>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const buttons = document.querySelectorAll('[data-view-choice]');
+      if (!buttons.length) return;
+
+      const render = () => {
+        const current = root.getAttribute('data-view');
+        buttons.forEach((button) => {
+          const selected = button.dataset.viewChoice === current;
+          button.classList.toggle('active', selected);
+          button.setAttribute('aria-pressed', String(selected));
+        });
+      };
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          root.setAttribute('data-view', button.dataset.viewChoice);
+          /* The layout is a preference of its own, shared by every page. */
+          localStorage.setItem('view', button.dataset.viewChoice);
+          render();
+        });
       });
 
       render();

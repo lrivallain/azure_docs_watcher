@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import repo_icon %}
+{% from "_macros.html" import repo_icon, view_toggle %}
 {% block title %}{{ folder }}{% endblock %}
 
 {% block feed_autodiscovery %}
@@ -18,7 +18,7 @@
 </nav>
 
 <div class="d-flex align-items-start gap-3 mb-3">
-  <div class="d-none d-sm-block">{{ repo_icon(repository, '3.5rem') }}</div>
+  <div class="d-none d-sm-block">{{ repo_icon(repository, 'sm') }}</div>
   <div class="flex-grow-1">
     <h1 class="h4 text-break">
       {{ repository.owner }}/{{ repository.repository }}{{ repository.articles_folder }}{{ folder }}
@@ -37,13 +37,16 @@
   </div>
 </div>
 
-<p class="lead">
-  {% if commits %}
-  Last {{ commits|length }} commit{{ 's' if commits|length > 1 }} touching this section.
-  {% else %}
-  No commit found for this section.
-  {% endif %}
-</p>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+  <p class="lead mb-0">
+    {% if commits %}
+    Last {{ commits|length }} commit{{ 's' if commits|length > 1 }} touching this section.
+    {% else %}
+    No commit found for this section.
+    {% endif %}
+  </p>
+  {% if commits %}{{ view_toggle() }}{% endif %}
+</div>
 
 {% if commits|length >= feed_size %}
 <div class="alert alert-info d-flex gap-2 py-2" role="alert">
@@ -57,7 +60,7 @@
 </div>
 {% endif %}
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 view-collection">
   {% for commit in commits %}
   <div class="col">
     <div class="card h-100 commit-card">
@@ -72,7 +75,7 @@
         {% endif %}
       </div>
       <div class="card-body">
-        <p class="card-text" style="white-space:pre-line;">{{ commit.message }}</p>
+        <p class="card-text commit-message" title="{{ commit.message }}">{{ commit.message }}</p>
       </div>
       <div class="card-footer d-flex justify-content-between align-items-center">
         <small class="text-body-secondary text-truncate" title="{{ commit.author }}">
