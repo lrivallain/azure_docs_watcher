@@ -50,7 +50,8 @@
 
 /* Cards highlight themselves when pointed at or keyboard focused. */
 .commit-card,
-.repo-card {
+.repo-card,
+.section-card {
   transition:
     background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out,
@@ -67,7 +68,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .commit-card,
-  .repo-card {
+  .repo-card,
+  .section-card {
     transition: none;
   }
 }
@@ -92,7 +94,7 @@
     overflow: hidden;
   }
 
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card) {
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card) {
     flex-direction: row;
     align-items: stretch;
     border: 0;
@@ -103,7 +105,7 @@
 
   /* The last row has no divider, but it keeps a transparent one so that its
      hover underline lines up with the other rows instead of shifting them. */
-  [data-view="list"] .view-collection > *:last-child :is(.repo-card, .commit-card) {
+  [data-view="list"] .view-collection > *:last-child :is(.repo-card, .commit-card, .section-card) {
     border-bottom-color: transparent;
   }
 
@@ -118,21 +120,21 @@
   /* A row highlight reads better than a floating ring in a table. The
      underline reuses the halo recipe of the grid cards: the accent colour on
      the edge itself, topped by a 0.2rem translucent band of the same colour. */
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card):hover,
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card):focus-within {
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card):hover,
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card):focus-within {
     background-color: var(--bs-tertiary-bg);
     border-bottom-color: var(--bs-primary);
     box-shadow: inset 0 -0.2rem 0 rgba(var(--bs-primary-rgb), 0.25);
   }
 
   /* Cells: no cap background, tight padding, one continuous surface. */
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card) > * {
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card) > * {
     background-color: transparent;
     border: 0;
     padding: 0.35rem 0.75rem;
   }
 
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card) > .card-header {
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card) > .card-header {
     display: flex;
     flex: 0 0 16.5rem;
     gap: 0.75rem;
@@ -142,7 +144,7 @@
     white-space: nowrap;
   }
 
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card) > .card-body {
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card) > .card-body {
     display: flex;
     flex: 1 1 auto;
     gap: 0.75rem;
@@ -150,7 +152,7 @@
     min-width: 0;
   }
 
-  [data-view="list"] .view-collection :is(.repo-card, .commit-card) > .card-footer {
+  [data-view="list"] .view-collection :is(.repo-card, .commit-card, .section-card) > .card-footer {
     display: flex;
     flex: 0 0 auto;
     gap: 0.75rem;

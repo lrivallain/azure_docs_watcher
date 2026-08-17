@@ -52,6 +52,22 @@ def test_repo_home_lists_the_sections(client):
 
 
 @responses.activate
+def test_section_index_is_always_a_list(client):
+    responses.add(
+        responses.GET,
+        CONTENTS_URL,
+        json=[{"name": "aks", "path": "articles/aks", "type": "dir"}],
+        status=200,
+    )
+    response = client.get("/MicrosoftDocs/azure-docs")
+    # The layout is forced rather than read from local storage, and the switch
+    # is not offered: a grid of sections would add nothing.
+    assert b"'list'" in response.data
+    assert b'data-view-choice="grid"' not in response.data
+    assert b"section-card" in response.data
+
+
+@responses.activate
 def test_section_page_renders_the_commits(client):
     register_section()
     response = client.get("/MicrosoftDocs/azure-docs/aks")

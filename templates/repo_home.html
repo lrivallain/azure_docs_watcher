@@ -17,7 +17,7 @@
 </nav>
 
 <div class="d-flex align-items-start gap-3 mb-3">
-  <div class="d-none d-sm-block">{{ repo_icon(repository, '3.5rem') }}</div>
+  <div class="d-none d-sm-block">{{ repo_icon(repository, 'sm') }}</div>
   <div class="flex-grow-1">
     <h1 class="h4 text-break">{{ repository.owner }}/{{ repository.repository }}</h1>
     <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Actions">
@@ -30,56 +30,48 @@
       <a href="/api/{{ repository.name }}" title="View the result as JSON" class="btn btn-outline-primary">
         <i class="bi bi-filetype-json"></i> JSON</a>
     </div>
-    <p class="lead mt-3">
-      Pick a section to follow the latest changes made to its documentation
-      articles.
-    </p>
   </div>
 </div>
 
-<div class="table-responsive">
-  <table class="table table-hover align-middle">
-    <caption>{{ contents|length }} entries in {{ repository.articles_folder or '/' }}</caption>
-    <thead>
-      <tr>
-        <th scope="col">Section</th>
-        <th scope="col" class="text-end">Follow</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in contents %}
-      <tr>
-        <th scope="row" class="fw-normal">
-          <a href="/{{ repository.name }}/{{ entry.name }}" class="text-decoration-none"
+<p class="lead">
+  {{ contents|length }} section{{ 's' if contents|length > 1 }} in
+  <code>{{ repository.articles_folder or '/' }}</code>. Pick one to follow its latest changes.
+</p>
+
+<div class="row row-cols-1 g-3 view-collection">
+  {% for entry in contents %}
+  <div class="col">
+    <div class="card h-100 section-card">
+      <div class="card-body">
+        <a href="/{{ repository.name }}/{{ entry.name }}" class="text-decoration-none text-truncate"
+          title="Latest changes for {{ entry.name }}">
+          <i class="bi bi-{{ 'folder' if entry.type == 'dir' else 'file-earmark-text' }} text-body-secondary"></i>
+          {{ entry.name }}
+        </a>
+      </div>
+      <div class="card-footer">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Follow {{ entry.name }}">
+          <a href="/{{ repository.name }}/{{ entry.name }}" class="btn btn-outline-primary"
             title="Latest changes for {{ entry.name }}">
-            <i class="bi bi-{{ 'folder' if entry.type == 'dir' else 'file-earmark-text' }} text-body-secondary"></i>
-            {{ entry.name }}
+            <i class="bi bi-eye"></i><span class="visually-hidden">Latest changes</span>
           </a>
-        </th>
-        <td class="text-end">
-          <div class="btn-group btn-group-sm" role="group" aria-label="Follow {{ entry.name }}">
-            <a href="/{{ repository.name }}/{{ entry.name }}" class="btn btn-outline-primary"
-              title="Latest changes for {{ entry.name }}">
-              <i class="bi bi-eye"></i><span class="visually-hidden">Latest changes</span>
-            </a>
-            <a href="/feed/{{ repository.name }}/{{ entry.name }}" class="btn btn-outline-primary"
-              title="RSS feed for {{ entry.name }}">
-              <i class="bi bi-rss-fill text-warning"></i><span class="visually-hidden">RSS feed</span>
-            </a>
-            <a href="/api/{{ repository.name }}/{{ entry.name }}" class="btn btn-outline-primary"
-              title="JSON output for {{ entry.name }}">
-              <i class="bi bi-filetype-json"></i><span class="visually-hidden">JSON</span>
-            </a>
-            <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}/tree/HEAD/{{ entry.path }}"
-              class="btn btn-outline-primary" target="_blank" rel="noopener"
-              title="View {{ entry.name }} on GitHub">
-              <i class="bi bi-github"></i><span class="visually-hidden">GitHub</span>
-            </a>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          <a href="/feed/{{ repository.name }}/{{ entry.name }}" class="btn btn-outline-primary"
+            title="RSS feed for {{ entry.name }}">
+            <i class="bi bi-rss-fill text-warning"></i><span class="visually-hidden">RSS feed</span>
+          </a>
+          <a href="/api/{{ repository.name }}/{{ entry.name }}" class="btn btn-outline-primary"
+            title="JSON output for {{ entry.name }}">
+            <i class="bi bi-filetype-json"></i><span class="visually-hidden">JSON</span>
+          </a>
+          <a href="https://github.com/{{ repository.owner }}/{{ repository.repository }}/tree/HEAD/{{ entry.path }}"
+            class="btn btn-outline-primary" target="_blank" rel="noopener"
+            title="View {{ entry.name }} on GitHub">
+            <i class="bi bi-github"></i><span class="visually-hidden">GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock %}

@@ -53,7 +53,8 @@
   the halo of the grid cards: the accent colour on the edge itself, topped by a
   translucent band of the same colour.
 * The repository list and the commit list can be shown as a grid of cards or as
-  a dense table. The choice is stored locally and applies to both pages, and is
+  a dense table, and the section index reuses the same table rows so the three
+  lists of the application look alike. The choice is stored locally and applies to both pages, and is
   restored before the first paint so the layout does not flicker.
 * Long commit messages are clamped, so that a single 80 line merge message no
   longer stretches every card of its row to thousands of pixels.

@@ -23,13 +23,17 @@
   <title>{% block title %}{% endblock %} – Azure docs changes watcher</title>
 
   {# Applied before the first paint to avoid flashing the wrong colour scheme
-     or the wrong layout. #}
+     or the wrong layout. Pages that only make sense as a list force it,
+     without overwriting the layout the visitor chose elsewhere. #}
   <script>
     (() => {
       const stored = localStorage.getItem('theme');
       const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       document.documentElement.setAttribute('data-bs-theme', stored || preferred);
-      document.documentElement.setAttribute('data-view', localStorage.getItem('view') || 'grid');
+      document.documentElement.setAttribute(
+        'data-view',
+        {% if forced_view %}'{{ forced_view }}'{% else %}localStorage.getItem('view') || 'grid'{% endif %}
+      );
     })();
   </script>
 </head>

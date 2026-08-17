@@ -125,6 +125,9 @@ def repo_home(repo_owner: str, repo_name: str):
         "repo_home.html",
         repository=config_repo,
         contents=contents,
+        # A section index is only ever a list: a grid of cards would add
+        # nothing, so the layout switch is not offered here.
+        forced_view="list",
     )
 
 
