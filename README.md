@@ -2,29 +2,124 @@
 
 # [Azure Docs changes watcher](https://azdocswatch.vupti.me)
 
-Watch changes in the Azure docs repository.
+Follow the changes made to the Azure documentation repositories, as a web page,
+an **RSS feed** or **JSON**.
 
 * Free software: MIT license
 
-# Features
+## Features
 
-* List Azure docs articles for some repositories:
+* Browse the sections of the documentation repositories:
   * [Azure Docs](https://github.com/MicrosoftDocs/azure-docs)
   * [Azure SQL](https://github.com/MicrosoftDocs/sql-docs)
   * [Azure Quantum](https://github.com/MicrosoftDocs/quantum-docs)
-* Support for custom repositories tracking (#17)
-* See the last changes in the Azure docs repository for a specific service/section
-* Use a GitHub oAuth token to increase the rate limit and the number of results
-* RSS feed for each section (#7)
-* JSON outputs for API consumption (#23)
-* Cache capabilities are used to reduce the number of API calls to GitHub and improve performance (#9)
-* Light/dark theme (#19)
+  * [Azure IoT Edge](https://github.com/Azure/iotedge)
+* Watch any other public repository the same way (#17)
+* See the latest changes for a given service or section
+* RSS feed for every repository and every section (#7), with feed autodiscovery
+* JSON output for API consumption (#23)
+* Caching to keep the service fast and light on GitHub (#9)
+* Light and dark theme, following your system preference (#19)
+* **No GitHub account, token or login required — anywhere**
 
-# Known issues
+## How it works, and why there is no token
 
-## #10 - SAML enforcement policies
+The commit history is read from the **Atom feeds published by the GitHub web
+front-end**:
 
-Some user within organizations with SAML enforcement policies may have issues with the GitHub oAuth login.
+```text
+https://github.com/<owner>/<repository>/commits/<branch>/<path>.atom
+```
 
-To workaround this issue, you can access directly to GitHub and ensure you are logged in against your organization account.
-Then, you can access to the Azure Docs changes watcher and you should be able to login.
+Those feeds are public, require no credential, and are *not* served by
+`api.github.com`, so they consume no REST API rate limit at all.
+
+The default branch of a repository is discovered from the title of the
+branch-less feed (`Recent Commits to <repository>:<branch>`), which matters
+because repositories do not all agree on a default branch name — `sql-docs`
+uses `live`.
+
+The only remaining call to the REST API is the directory listing used to build
+the section index. It is performed anonymously and cached for a long time.
+
+### Why this replaced the previous access token
+
+The application used to require a shared `GITHUB_ACCESS_TOKEN`. Organizations
+can cap personal access token lifetimes to as little as seven days, which turned
+the deployment into a recurring manual token renewal chore. Reading public data
+through public endpoints removes that dependency entirely.
+
+## Known limitation
+
+GitHub serves commit feeds as a **single, non paginated page of 20 entries**,
+with no date filter. A section can therefore never show more than 20 commits,
+and on a very active path — the root of `azure-docs` receives 40 to 120 commits
+a day — those 20 entries may only span a few hours.
+
+Watching a more specific section gives a much longer window. The previous
+token-based implementation was capped at 20 commits too, so this is not a
+regression.
+
+## Configuration
+
+Everything is optional; the application starts with no environment variable set.
+
+| Variable                     | Default | Description                                        |
+| ---------------------------- | ------- | -------------------------------------------------- |
+| `AZDOCSWATCH_SINCE`          | `5`     | Default look-back window, in days                  |
+| `AZDOCSWATCH_MAX_COMMITS`    | `20`    | Commits returned per section (capped at 20)        |
+| `AZDOCSWATCH_MAX_SINCE`      | `30`    | Upper bound accepted for the `since` parameter     |
+| `AZDOCSWATCH_CACHE_SIZE`     | `1024`  | Maximum number of cache entries                    |
+| `AZDOCSWATCH_CACHE_TTL`      | `600`   | Base cache lifetime, in seconds                    |
+| `AZDOCSWATCH_HTTP_TIMEOUT`   | `10`    | Timeout of the calls to GitHub, in seconds         |
+| `AZDOCSWATCH_USER_AGENT`     | —       | `User-Agent` sent to GitHub                        |
+
+## Running it locally
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+flask --app app run --debug        # http://127.0.0.1:5000
+```
+
+Or the way it runs in production:
+
+```bash
+gunicorn -b 127.0.0.1:8000 app:app
+```
+
+## Development
+
+```bash
+ruff check .            # lint
+ruff format .           # format
+pytest                  # tests, no network access required
+```
+
+The tests replay recorded GitHub payloads, so the suite runs offline.
+
+## Deployment
+
+The application is deployed to Azure App Service by
+[`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml), which lints and
+tests every push and pull request, and deploys `master` only when those pass.
+Dependencies are installed on Azure by Oryx from `requirements.txt`.
+
+The deployment authenticates with a publish profile stored in the
+`AZUREAPPSERVICE_PUBLISHPROFILE_*` secret. Switching to
+[OpenID Connect](https://learn.microsoft.com/azure/developer/github/connect-from-azure-openid-connect)
+with `azure/login@v3` removes that long-lived secret and is recommended.
+
+## Endpoints
+
+| Path                             | Description                        |
+| -------------------------------- | ---------------------------------- |
+| `/`                              | Repository index                   |
+| `/<owner>/<repo>`                | Sections of a repository           |
+| `/<owner>/<repo>/<section>`      | Latest changes of a section        |
+| `/feed/<owner>/<repo>[/<section>]` | RSS feed                         |
+| `/api/<owner>/<repo>[/<section>]`  | JSON output                      |
+
+All of them accept a `?since=<days>` parameter.

@@ -1,183 +1,124 @@
 <!doctype html>
-<html lang="fr" data-bs-color-scheme>
+<html lang="en">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The page supports both dark and light color schemes,
-    and the page author prefers / default is light. -->
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Follow the latest changes made to the Azure documentation repositories, as a web page, an RSS feed or JSON.">
 
-  <!-- Favicon from Font Awesome icon set -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-blackbox.min.css" rel="stylesheet">
-  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
-    media="(prefers-color-scheme: light)"> -->
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+  {# Let browsers and readers discover the RSS feed of the current page. #}
+  {% block feed_autodiscovery %}{% endblock %}
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+    crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet"
+    integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk"
+    crossorigin="anonymous">
 
   <title>{% block title %}{% endblock %} – Azure docs changes watcher</title>
-  <style>
-    .alert-warning {
-      font-size: 0.85rem;
-      border-top-left-radius: 0px;
-      border-top-right-radius: 0px;
-    }
-  </style>
+
+  {# Applied before the first paint to avoid flashing the wrong colour scheme. #}
+  <script>
+    (() => {
+      const stored = localStorage.getItem('theme');
+      const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-bs-theme', stored || preferred);
+    })();
+  </script>
 </head>
 
-<body class="h-100 bootstrap">
-  <div class="container-lg px-0 px-lg-2">
-    <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">
-          <img src="{{ url_for('static', filename='favicon.svg') }}" alt="Azure Docs changes watcher" height="24">
-          Azure Docs changes watcher
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
-          aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-question-circle"></i>
-              </a>
-              <ul class="dropdown-menu">
-                <li class="nav-item">
-                  <a class="dropdown-item" href="/" title="Go to home page"><i
-                      class="bi bi-house-door"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                  <a class="dropdown-item" href="#" title="Change theme" id="themeSwitch">
-                    <i class="bi bi-palette"></i> Change theme</a>
-                  <script>
-                    document.querySelector("#themeSwitch").onclick = function(e){
-                      darkmode.toggleDarkMode();
-                    }
-                  </script>
-                <li>
-                  <a class="dropdown-item" href="https://github.com/lrivallain/azure_docs_watcher"
-                    title="About" target="_blank">
-                    <i class="bi bi-github"></i> About</a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="https://github.com/lrivallain/azure_docs_watcher/issues/new/choose"
-                    title="Report issue" target="_blank">
-                    <i class="bi bi-bug"></i> Report issue</a></li>
-              </ul>
-            </li>
-            {% if session.username %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-check"></i> {{ session.username }}
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="/logout" title="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-              </ul>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="/login" title="Login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-            </li>
-            {% endif %}
-          </ul>
-        <div>
-      </div>
-    </nav>
-    {% if not session.username %}
-    <div class="d-flex alert alert-warning pb-0" role="alert" id="performanceAlert">
-      <div class="flex-shrink-0" style="margin-top:-0.3rem;" data-bs-dismiss="alert" aria-label="Close"
-        title="Close the alert message">
-        <button type="button" class="btn-close" id="performanceAlertDismiss"></button>
-      </div>
-      <div class="flex-grow-1 ms-5">
-        <div type="button" title="Expand the alert message"
-          data-bs-toggle="collapse" data-bs-target="#performanceCollapse"
-          aria-expanded="false" aria-controls="performanceCollapse">
-          <p>
-            Please have a look at <strong>performance considerations</strong>
-            <i class="bi bi-caret-down"></i>
-          </p>
-        </div>
-        <div class="collapse" id="performanceCollapse">
-          <p>To ensure reasonable performances, the service is currently limited with the following criteria.
-            Criteria are applied on <em>"per section"</em> basis.</p>
-          <ul>
-            <li>Commits logs are retrieved over the last <strong>{{ since }} days</strong>.</li>
-            <li>Only the last <strong>{{ max_commits }} commits</strong> are retrieved over this period.</li>
-          </ul>
-          <p>You can <a href="/login" title="Login" class="alert-link">login with a GitHub account</a> to bypass the last limit.</p>
-        </div>
+<body class="d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+    <div class="container-lg">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="{{ url_for('static', filename='favicon.svg') }}" alt="" height="24" width="24">
+        <span>Azure Docs changes watcher</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+        aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+          <li class="nav-item">
+            <a class="nav-link" href="/" title="Go to the home page">
+              <i class="bi bi-house-door"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/lrivallain/azure_docs_watcher" target="_blank"
+              rel="noopener" title="Source code on GitHub">
+              <i class="bi bi-github"></i> About
+            </a>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-link nav-link" type="button" id="themeSwitch"
+              title="Switch between the light and dark themes">
+              <i class="bi" id="themeSwitchIcon"></i>
+              <span class="d-lg-none">Switch theme</span>
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
-    {% endif %}
+  </nav>
 
-    <main class="px-3 py-3">
-      {% block content %}{% endblock %}
-    </main>
+  <main class="container-lg px-3 py-4 flex-grow-1">
+    {% block content %}{% endblock %}
+  </main>
 
-    <footer class="-lg px-lg-2 text-center py-3 px-3 my-4 border-top">
-      <div class="row gx-5">
-        <div class="col">
-          <a href="https://github.com/lrivallain/azure_docs_watcher" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-            title="Source code on GitHub">
-            <i class="bi bi-github"></i>
-          </a>
-        </div>
-        <div class="col">
-          <a href="https://getbootstrap.com/" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-            title="UI components are based on Boostrap framework">
-            <i class="bi bi-bootstrap"></i>
-          </a>
-        </div>
-        <div class="col">
-          <a href="https://mastodon.social/@lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-            title="Mastodon account for @lrivallain@mastodon.social">
-            <i class="bi bi-mastodon"></i>
-          </a>
-        </div>
-        <div class="col">
-          <a href="https://twitter.com/lrivallain" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
-            title="Twitter account for @lrivallain">
-            <i class="bi bi-twitter"></i>
-          </a>
-        </div>
-      </div>
-    </footer>
-  </div>
+  <footer class="border-top py-3 mt-4">
+    <div class="container-lg d-flex justify-content-center gap-4">
+      <a href="https://github.com/lrivallain/azure_docs_watcher" class="link-secondary"
+        target="_blank" rel="noopener" title="Source code on GitHub">
+        <i class="bi bi-github"></i><span class="visually-hidden">GitHub</span>
+      </a>
+      <a href="https://github.com/lrivallain/azure_docs_watcher/issues/new/choose" class="link-secondary"
+        target="_blank" rel="noopener" title="Report an issue">
+        <i class="bi bi-bug"></i><span class="visually-hidden">Report an issue</span>
+      </a>
+      <a href="https://mastodon.social/@lrivallain" class="link-secondary"
+        target="_blank" rel="me noopener" title="Mastodon account for @lrivallain@mastodon.social">
+        <i class="bi bi-mastodon"></i><span class="visually-hidden">Mastodon</span>
+      </a>
+    </div>
+  </footer>
 
-  <!-- Optional JavaScript -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
-    crossorigin="anonymous">
-  </script>
-  <script
-    src="https://code.jquery.com/jquery-3.6.1.slim.min.js"
-    integrity="sha256-w8CvhFs7iHNVUtnSP0YKEg00p9Ih13rlL9zGqvLdePA="
-    crossorigin="anonymous">
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/js/darkmode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
   <script>
-    var Cookies2 = Cookies.noConflict()
-    $("#performanceAlertDismiss").on('click', function() {
-        Cookies2.set('performanceAlertDismiss','hide', { expires: 7 });
-        console.debug('Cookie performanceAlertDismiss set to hide');
-    });
+    (() => {
+      const root = document.documentElement;
+      const button = document.getElementById('themeSwitch');
+      const icon = document.getElementById('themeSwitchIcon');
 
-    if(Cookies2.get('performanceAlertDismiss') == 'hide') {
-        console.debug('Cookie performanceAlertDismiss is set to hide');
-        $("#performanceAlert").remove();
-    } else {
-        console.debug('Cookie performanceAlertDismiss is not set');
-    }
+      const render = () => {
+        const isDark = root.getAttribute('data-bs-theme') === 'dark';
+        icon.className = `bi bi-${isDark ? 'sun' : 'moon-stars'}`;
+        button.setAttribute('aria-label', `Switch to the ${isDark ? 'light' : 'dark'} theme`);
+      };
+
+      button.addEventListener('click', () => {
+        const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-bs-theme', next);
+        localStorage.setItem('theme', next);
+        render();
+      });
+
+      /* Follow the system preference until the visitor picks a theme. */
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+        if (localStorage.getItem('theme')) return;
+        root.setAttribute('data-bs-theme', event.matches ? 'dark' : 'light');
+        render();
+      });
+
+      render();
+    })();
   </script>
 </body>
 

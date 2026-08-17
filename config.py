@@ -1,5 +1,4 @@
-"""Manage the application configuration.
-"""
+"""Manage the application configuration."""
 
 import os
 
@@ -11,24 +10,28 @@ APP_DESCRIPTION = "Track changes in __repo__ documentation articles"
 # Performances limits
 SINCE = int(os.getenv("AZDOCSWATCH_SINCE", 5))
 MAX_COMMITS = int(os.getenv("AZDOCSWATCH_MAX_COMMITS", 20))
+# Upper bound accepted for the ``since`` query string parameter.
+MAX_SINCE = int(os.getenv("AZDOCSWATCH_MAX_SINCE", 30))
 
 # Cache configuration
 CACHE_SIZE = int(os.getenv("AZDOCSWATCH_CACHE_SIZE", 1024))
 CACHE_TTL = int(os.getenv("AZDOCSWATCH_CACHE_TTL", 600))
 
-# GitHub application configuration
-GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
-GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+# GitHub endpoints and HTTP client settings
+GITHUB_WEB_BASE = os.getenv("GITHUB_WEB_BASE", "https://github.com").rstrip("/")
+GITHUB_API_BASE = os.getenv("GITHUB_API_BASE", "https://api.github.com").rstrip("/")
+HTTP_TIMEOUT = int(os.getenv("AZDOCSWATCH_HTTP_TIMEOUT", 10))
+USER_AGENT = os.getenv(
+    "AZDOCSWATCH_USER_AGENT",
+    "azure-docs-watcher (+https://github.com/lrivallain/azure_docs_watcher)",
+)
+
+# GitHub serves commit Atom feeds as a single, non paginated page of 20 entries
+# and offers no date filter, so no visitor can ever get more commits than this.
+ATOM_MAX_COMMITS = 20
+MAX_COMMITS = min(MAX_COMMITS, ATOM_MAX_COMMITS)
 
 # Azure Docs repo configuration
-AZURE_DOCS_REPO = "azure-docs"
-AZURE_DOCS_OWNER = "MicrosoftDocs"
-AZURE_DOCS_ARTICLES_FOLDER_PREFIX = "/articles/"
-
-# Shared Github client token
-GITHUB_ACCESS_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
-if not GITHUB_ACCESS_TOKEN:
-    raise Exception("GITHUB_ACCESS_TOKEN environment variable is not set")
 
 AZURE_DOCS_REPOS = {
     "MicrosoftDocs/azure-docs": {
@@ -55,7 +58,7 @@ AZURE_DOCS_REPOS = {
         "articles_folder": "/articles/",
         "icon": "azure-icons/Azure-Quantum.svg",
     },
-    "Azure/iotedge" : {
+    "Azure/iotedge": {
         "name": "Azure/iotedge",
         "display_name": "Azure IoT Edge",
         "owner": "Azure",

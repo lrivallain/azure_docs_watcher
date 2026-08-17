@@ -97,4 +97,4 @@ Before you submit a pull request, check that it meets these guidelines:
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
-2. The pull request should work for Python 3.10.
+2. The pull request should work for Python 3.13.
