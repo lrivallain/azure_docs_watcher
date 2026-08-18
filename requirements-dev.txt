@@ -4,3 +4,5 @@ pytest==9.1.1
 responses==0.26.2
 # Linting and formatting
 ruff==0.16.2
+# `.env` support for `flask run`, development only
+python-dotenv==1.2.2

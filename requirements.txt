@@ -9,5 +9,3 @@ requests==2.34.2
 feedgen==1.0.0
 # Caching
 cachetools==7.1.7
-# Local development configuration (.env support for `flask run`)
-python-dotenv==1.2.2
