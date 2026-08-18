@@ -120,6 +120,31 @@ The tests replay recorded GitHub payloads, so the suite runs offline.
 
 ## Deployment
 
+### Runtime version
+
+The application is deployed to an Azure App Service, which installs the
+dependencies itself: **its runtime is what actually runs this code**, not the
+version used by the workflow. Keep the three in step:
+
+* the App Service `linuxFxVersion`,
+* the matrix in [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml),
+* `target-version` in [`pyproject.toml`](pyproject.toml).
+
+To read and raise the runtime:
+
+```bash
+az webapp config show --name azdocswatch --resource-group <group> \
+  --query linuxFxVersion -o tsv
+
+az webapp config set --name azdocswatch --resource-group <group> \
+  --linux-fx-version "PYTHON|3.13"
+```
+
+Python 3.10 reaches end of life on 2026-10-31. App Service currently offers up
+to `PYTHON|3.14`.
+
+### Pipeline
+
 The application is deployed to Azure App Service by
 [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml), which lints and
 tests every push and pull request, and deploys `master` only when those pass.

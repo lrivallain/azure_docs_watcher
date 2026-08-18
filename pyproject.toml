@@ -6,10 +6,16 @@ addopts = "-q"
 
 [tool.ruff]
 line-length = 90
+# Target of the migration: the Azure App Service runtime is being moved to this
+# version. Keep it in step with the runtime and with the CI matrix.
 target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+# UP017 rewrites datetime.timezone.utc into the 3.11+ datetime.UTC alias. That
+# alias is what took production down on the 3.10 runtime, so the portable
+# spelling is kept until the runtime bump is everywhere.
+ignore = ["UP017"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests reach into the module level caches on purpose.

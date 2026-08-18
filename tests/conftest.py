@@ -49,7 +49,9 @@ def atom_entry(
         str: the serialized ``<entry>`` element.
     """
     if updated is None:
-        updated = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        updated = datetime.datetime.now(datetime.timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
     first_line = message.splitlines()[0]
     block = f"<pre style='white-space:pre-wrap;width:81ex'>{html.escape(message)}</pre>"
     return f"""<entry>
@@ -76,7 +78,7 @@ def days_ago(days: int) -> str:
     Returns:
         str: an ISO-8601 timestamp.
     """
-    moment = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
+    moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)
     return moment.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

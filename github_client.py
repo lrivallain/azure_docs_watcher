@@ -139,8 +139,8 @@ def _parse_date(value: str) -> datetime.datetime:
         log.warning("Unparsable date returned by GitHub: %r", value)
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=datetime.UTC)
-    return parsed.astimezone(datetime.UTC)
+        parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+    return parsed.astimezone(datetime.timezone.utc)
 
 
 def _parse_feed(content: bytes) -> ElementTree.Element:
