@@ -2,8 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+* The RSS feeds answer conditional requests. Every feed carries an `ETag`, a
+  `Last-Modified` date and a `Cache-Control` header, so a reader polling a
+  subscription gets an empty `304 Not Modified` until a new commit lands
+  instead of downloading the same document again.
+
 ### Changed
 
+* The serialized feed body is cached, keyed on the commits it publishes: the
+  repeated polls of a subscription no longer rebuild an identical document, and
+  the `ETag` stays stable between them.
+* `feeds` no longer reads the Flask request context. The feed URL and the logo
+  URL are passed in by the view, which makes the rendering a pure function of
+  its arguments — a prerequisite for caching it — and testable on its own.
+  `get_feed` now returns a `FeedPayload` rather than raw bytes.
 * The README documents the application as it is today. Its change history moved
   here, and its inline list of watched repositories moved to `config.py`, which
   already owned it.

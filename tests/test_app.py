@@ -132,6 +132,90 @@ def test_feed_points_back_to_the_html_page(client):
 
 
 @responses.activate
+def test_feed_carries_its_http_validators(client):
+    register_section()
+    response = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+    assert response.status_code == 200
+    assert response.headers["ETag"]
+    assert response.headers["Last-Modified"]
+    assert response.cache_control.public
+    assert response.cache_control.max_age
+
+
+@responses.activate
+def test_a_known_etag_gets_a_bodyless_304(client):
+    register_section()
+    first = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+    second = client.get(
+        "/feed/MicrosoftDocs/azure-docs/aks",
+        headers={"If-None-Match": first.headers["ETag"]},
+    )
+    assert second.status_code == 304
+    assert second.data == b""
+    # The validator must survive the 304, or the next poll cannot reuse it.
+    assert second.headers["ETag"] == first.headers["ETag"]
+
+
+@responses.activate
+def test_an_up_to_date_reader_gets_a_304(client):
+    register_section()
+    first = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+    second = client.get(
+        "/feed/MicrosoftDocs/azure-docs/aks",
+        headers={"If-Modified-Since": first.headers["Last-Modified"]},
+    )
+    assert second.status_code == 304
+
+
+@responses.activate
+def test_the_etag_is_stable_across_polls(client):
+    register_section()
+    # An unstable ETag would make every poll a full download, which is exactly
+    # what the cached body exists to prevent.
+    first = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+    second = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+    assert first.headers["ETag"] == second.headers["ETag"]
+    assert first.data == second.data
+
+
+@responses.activate
+def test_a_stale_etag_gets_the_new_body(client):
+    register_section()
+    response = client.get(
+        "/feed/MicrosoftDocs/azure-docs/aks",
+        headers={"If-None-Match": '"not-the-current-one"'},
+    )
+    assert response.status_code == 200
+    assert b"<rss" in response.data
+
+
+@responses.activate
+def test_a_new_commit_changes_the_etag(client):
+    import feeds
+    import github_client
+
+    register_section()
+    first = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+
+    # Only the upstream commits change: the render cache must not mask that.
+    github_client._feed_cache.clear()
+    responses.add(
+        responses.GET,
+        SECTION_FEED_URL,
+        body=atom_feed(
+            atom_entry(sha="b" * 40, message="Another change", name="bob")
+            + atom_entry(message="Update the AKS docs", name="alice")
+        ),
+        status=200,
+    )
+    second = client.get("/feed/MicrosoftDocs/azure-docs/aks")
+    assert second.status_code == 200
+    assert second.headers["ETag"] != first.headers["ETag"]
+    assert b"bob" in second.data
+    assert len(feeds._render_cache) == 2
+
+
+@responses.activate
 def test_api_returns_iso_dates(client):
     register_section()
     response = client.get("/api/MicrosoftDocs/azure-docs/aks")

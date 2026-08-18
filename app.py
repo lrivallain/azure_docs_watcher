@@ -15,6 +15,7 @@ from flask import (
     Response,
     jsonify,
     render_template,
+    request,
     send_from_directory,
     url_for,
 )
@@ -24,7 +25,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import github_client
-from config import ATOM_FEED_SIZE, AZURE_DOCS_REPOS, get_repo_config
+from config import ATOM_FEED_SIZE, AZURE_DOCS_REPOS, CACHE_TTL, get_repo_config
 from errors import GitHubError
 from feeds import get_feed
 
@@ -158,13 +159,17 @@ def get_commits_from_section(repo_owner: str, repo_name: str, folder: str):
 def repo_feed(repo_owner: str, repo_name: str, folder: str = None):
     """RSS feed of the commits of a repository or of one of its sections.
 
+    The response carries an ``ETag`` and a ``Last-Modified`` date so that a
+    reader polling every few minutes gets a bodyless ``304`` for as long as no
+    new commit has landed.
+
     Args:
         repo_owner (str): GitHub repository owner.
         repo_name (str): GitHub repository name.
         folder (str, optional): section to track.
 
     Returns:
-        Response: the RSS feed.
+        Response: the RSS feed, or an empty 304.
     """
     config_repo = get_repo_config(repo_owner, repo_name)
     commits = _commits_for(config_repo, folder)
@@ -180,15 +185,28 @@ def repo_feed(repo_owner: str, repo_name: str, folder: str = None):
         page_url = url_for(
             "repo_home", repo_owner=repo_owner, repo_name=repo_name, _external=True
         )
-    return Response(
-        get_feed(
-            commits,
-            folder or config_repo.get("articles_folder"),
-            config_repo,
-            page_url,
-        ),
-        mimetype="application/rss+xml",
+    logo_url = None
+    if config_repo.get("icon"):
+        logo_url = url_for("static", filename=config_repo["icon"], _external=True)
+
+    payload = get_feed(
+        commits,
+        folder or config_repo.get("articles_folder"),
+        config_repo,
+        page_url,
+        request.base_url,
+        logo_url,
     )
+    response = Response(payload.body, mimetype="application/rss+xml")
+    response.set_etag(payload.etag)
+    response.last_modified = payload.last_modified
+    # A reader that ignores the validators should still not poll faster than the
+    # upstream commit cache refreshes: there would be nothing new to read.
+    response.cache_control.public = True
+    response.cache_control.max_age = CACHE_TTL
+    # Turns the response into a 304 when the request carries a matching
+    # If-None-Match or If-Modified-Since.
+    return response.make_conditional(request)
 
 
 @app.route("/api/<repo_owner>/<repo_name>")
