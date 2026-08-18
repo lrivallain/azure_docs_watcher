@@ -24,10 +24,9 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import github_client
-from config import ATOM_FEED_SIZE, AZURE_DOCS_REPOS
+from config import ATOM_FEED_SIZE, AZURE_DOCS_REPOS, get_repo_config
 from errors import GitHubError
 from feeds import get_feed
-from utils import get_repo_config
 
 log = logging.getLogger(__name__)
 logging.getLogger("urllib3").setLevel(logging.WARNING)

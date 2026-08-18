@@ -1,5 +1,27 @@
 # History
 
+## Unreleased
+
+### Changed
+
+* The README describes the application as it is today: the rationale for
+  dropping the access token, the "not a regression" notes and the inline
+  repository list moved out, to `HISTORY.md` and to `config.py` respectively.
+* `get_repo_config` moved from `utils` into `config`, next to the repository
+  list it resolves against, and `utils.py` is gone.
+* The undocumented `GITHUB_WEB_BASE` and `GITHUB_API_BASE` overrides are plain
+  constants again; the `AZDOCSWATCH_*` variables are unaffected.
+* `python-dotenv` is a development dependency: production runs gunicorn and
+  never reads a `.env`.
+* Removed `AUTHORS.md`, an unreferenced `favicon.png` and a committed tool
+  cache, and trimmed the cookiecutter leftovers from `.gitignore`,
+  `.editorconfig` and `pyproject.toml`.
+
+### Fixed
+
+* Releases 1.0.0 to 1.3.0 were dated 2021 in this file; they all shipped in
+  November 2022, which also explains why 0.1.0 appeared to postdate them.
+
 ## 2.0.1 (2026-08-18)
 
 ### Fixed
@@ -93,22 +115,22 @@
   the retired v2 artifact actions.
 * Python 3.13.
 
-## 1.3.0 (2021-11-17)
+## 1.3.0 (2022-11-17)
 
 * JSON outputs for API consumption (#23)
 
-## 1.2.0 (2021-11-10)
+## 1.2.0 (2022-11-10)
 
 * Support for custom repositories tracking (#17)
 * Light/dark theme (#19)
 
-## 1.1.0 (2021-11-09)
+## 1.1.0 (2022-11-09)
 
 * Multi-repository support (Azure Docs, Azure SQL, Azure Quantum) (#15)
 * Review home page
 * Navigation breadcrumb
 
-## 1.0.0 (2021-11-03)
+## 1.0.0 (2022-11-03)
 
 * Use a GitHub oAuth token to increase the rate limit and the number of results.
 

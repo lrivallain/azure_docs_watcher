@@ -1,100 +1,41 @@
 # Contributing
 
-Contributions are welcome, and they are greatly appreciated! Every
-little bit helps, and credit will always be given.
+Contributions are welcome and appreciated — bug reports, fixes, features and
+documentation alike. Credit is always given.
 
-You can contribute in many ways:
+## Reporting bugs and proposing features
 
-## Types of Contributions
+Open an issue at
+<https://github.com/lrivallain/azure_docs_watcher/issues/new/choose>.
 
-### Report Bugs
+For a bug, include the steps to reproduce it, the URL you were on, and anything
+about your setup that might matter. For a feature, explain how it would work and
+keep the scope as narrow as possible. Issues tagged `help wanted` are open to
+anyone.
 
-Report bugs at <https://github.com/lrivallain/azure_docs_watcher/issues>.
+## Local development
 
-If you are reporting a bug, please include:
+```bash
+git clone git@github.com:<your-fork>/azure_docs_watcher.git
+cd azure_docs_watcher
 
-- Your operating system name and version.
-- Any details about your local setup that might be helpful in
-  troubleshooting.
-- Detailed steps to reproduce the bug.
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
 
-### Fix Bugs
+flask --app app run --debug   # http://127.0.0.1:5000
+```
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and
-"help wanted" is open to whoever wants to implement it.
+No GitHub credential is needed: the application only reads public endpoints.
 
-### Implement Features
+## Before opening a pull request
 
-Look through the GitHub issues for features. Anything tagged with
-"enhancement" and "help wanted" is open to whoever wants to implement
-it.
+* `ruff check .` and `ruff format .` pass.
+* `pytest` passes. The suite replays recorded GitHub payloads, so it runs
+  offline; new behaviour should come with a test.
+* The code runs on every Python version in the CI matrix of
+  [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
+* Public functions have a docstring, and user-visible changes are reflected in
+  [`README.md`](README.md) and [`HISTORY.md`](HISTORY.md).
 
-### Write Documentation
-
-Azure Docs changes watcher could always use more documentation,
-whether as part of the official Azure Docs changes watcher docs, in
-docstrings, or even on the web in blog posts, articles, and such.
-
-### Submit Feedback
-
-The best way to send feedback is to file an issue at <https://github.com/lrivallain/azure_docs_watcher/issues>.
-
-If you are proposing a feature:
-
-- Explain in detail how it would work.
-- Keep the scope as narrow as possible, to make it easier to
-  implement.
-- Remember that this is a volunteer-driven project, and that
-  contributions are welcome :)
-
-## Get Started
-
-Ready to contribute? Here's how to set up `azure_docs_watcher` for local development.
-
-1. Fork the `azure_docs_watcher` repo on GitHub.
-
-2. Clone your fork locally:
-
-    ``` shell
-    git clone git@github.com:your_name_here/azure_docs_watcher.git
-    ```
-
-3. Install your local copy into a virtualenv. Assuming you have
-    virtualenvwrapper installed, this is how you set up your fork for
-    local development:
-
-    ``` shell
-    mkvirtualenv azure_docs_watcher
-    cd azure_docs_watcher/
-    pip install -r requirements.txt
-    flask run
-    ```
-
-4. Create a branch for local development:
-
-    ``` shell
-    git checkout -b name-of-your-bugfix-or-feature
-    ```
-
-    Now you can make your changes locally.
-
-5. Commit your changes and push your branch to GitHub:
-
-    ``` shell
-    git add .
-    git commit -s -m "Your detailed description of your changes."
-    git push origin name-of-your-bugfix-or-feature
-    ```
-
-6. Submit a pull request through the GitHub website.
-
-## Pull Request Guidelines
-
-Before you submit a pull request, check that it meets these guidelines:
-
-Before you submit a pull request, check that it meets these guidelines:
-
-1. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.md.
-2. The pull request should work for Python 3.13.
+Sign your commits with `git commit -s`, then open the pull request against
+`master`.

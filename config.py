@@ -1,6 +1,9 @@
 """Manage the application configuration."""
 
+import logging
 import os
+
+log = logging.getLogger(__name__)
 
 # App details
 APP_AUTHOR = "Ludovic Rivallain"
@@ -17,8 +20,8 @@ CACHE_SIZE = int(os.getenv("AZDOCSWATCH_CACHE_SIZE", 1024))
 CACHE_TTL = int(os.getenv("AZDOCSWATCH_CACHE_TTL", 600))
 
 # GitHub endpoints and HTTP client settings
-GITHUB_WEB_BASE = os.getenv("GITHUB_WEB_BASE", "https://github.com").rstrip("/")
-GITHUB_API_BASE = os.getenv("GITHUB_API_BASE", "https://api.github.com").rstrip("/")
+GITHUB_WEB_BASE = "https://github.com"
+GITHUB_API_BASE = "https://api.github.com"
 HTTP_TIMEOUT = int(os.getenv("AZDOCSWATCH_HTTP_TIMEOUT", 10))
 USER_AGENT = os.getenv(
     "AZDOCSWATCH_USER_AGENT",
@@ -201,3 +204,33 @@ AZURE_DOCS_REPOS = {
         "icon": "favicon.svg",
     },
 }
+
+
+def get_repo_config(repo_owner: str, repo_name: str) -> dict:
+    """Get the configuration of a repository.
+
+    Repositories that are not part of the curated list are still supported:
+    they get a synthetic configuration so that any public repository can be
+    watched.
+
+    Args:
+        repo_owner (str): GitHub repository owner.
+        repo_name (str): GitHub repository name.
+
+    Returns:
+        dict: repository configuration.
+    """
+    repo_keyname = f"{repo_owner}/{repo_name}"
+    config_repo = AZURE_DOCS_REPOS.get(repo_keyname)
+    if config_repo:
+        return config_repo
+
+    log.debug("Unknown repository %s: building a synthetic configuration", repo_keyname)
+    return {
+        "name": repo_keyname,
+        "display_name": repo_keyname,
+        "owner": repo_owner,
+        "repository": repo_name,
+        "articles_folder": "/",
+        "icon": "",
+    }
