@@ -1,5 +1,20 @@
 # History
 
+## 2.0.1 (2026-08-18)
+
+### Fixed
+
+* Every commit view returned a 500 in production. `datetime.UTC` is an alias
+  added in Python 3.11, and the Azure App Service runs Python 3.10, so parsing
+  a commit date raised `AttributeError`. The portable `datetime.timezone.utc`
+  is used again.
+* The CI only tested the version the workflow installed, never the one the App
+  Service actually runs, so the failure could not be caught before deployment.
+  Tests now run on both, and the ruff rule that introduced the alias is
+  disabled until the runtime bump has landed everywhere.
+* The runtime version contract between the App Service, the CI matrix and the
+  linter target is documented in the README.
+
 ## 2.0.0 (2026-08-17)
 
 ### Removed the need for any GitHub credential

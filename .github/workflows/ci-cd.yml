@@ -15,18 +15,29 @@ permissions:
   contents: read
 
 env:
-  PYTHON_VERSION: '3.13'
+  # Version the Azure App Service is being moved to. Deployment installs the
+  # dependencies on the App Service itself, so its runtime is what actually
+  # runs this code.
+  TARGET_PYTHON_VERSION: '3.13'
 
 jobs:
   quality:
     name: Lint and test
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.10 is the runtime production still has, 3.13 the one it is moving
+        # to. Testing both is what stops code relying on features the running
+        # runtime lacks. Drop 3.10 once the App Service has been bumped, and
+        # remove the UP017 exception in pyproject.toml with it.
+        python-version: ['3.10', '3.13']
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: requirements-dev.txt
 

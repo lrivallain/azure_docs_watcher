@@ -74,6 +74,6 @@ def get_feed(commits: list, folder: str, repo: dict, page_url: str) -> bytes:
             entry.updated(commit["date"])
 
     dates = [commit["date"] for commit in commits if commit.get("date")]
-    feed.updated(max(dates) if dates else datetime.datetime.now(datetime.UTC))
+    feed.updated(max(dates) if dates else datetime.datetime.now(datetime.timezone.utc))
 
     return feed.rss_str(pretty=True)
