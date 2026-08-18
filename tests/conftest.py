@@ -5,6 +5,7 @@ import html
 
 import pytest
 
+import feeds
 import github_client
 
 
@@ -88,10 +89,12 @@ def clear_caches():
     github_client._branch_cache.clear()
     github_client._feed_cache.clear()
     github_client._directory_cache.clear()
+    feeds._render_cache.clear()
     yield
     github_client._branch_cache.clear()
     github_client._feed_cache.clear()
     github_client._directory_cache.clear()
+    feeds._render_cache.clear()
 
 
 @pytest.fixture

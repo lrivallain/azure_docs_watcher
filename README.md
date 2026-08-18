@@ -40,6 +40,11 @@ https://github.com/<owner>/<repository>/commits/<branch>/<path>.atom
 | `/feed/<owner>/<repo>[/<section>]` | RSS feed                    |
 | `/api/<owner>/<repo>[/<section>]`  | JSON output                 |
 
+The feeds are served with an `ETag` and a `Last-Modified` date: a reader that
+sends back `If-None-Match` or `If-Modified-Since` — most of them do — gets an
+empty `304 Not Modified` until a new commit lands, rather than the same
+document over and over.
+
 ## Development
 
 [CONTRIBUTING.md](CONTRIBUTING.md) explains how to help
