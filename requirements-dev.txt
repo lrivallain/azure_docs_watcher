@@ -1,8 +1,8 @@
 -r requirements.txt
 # Tests
 pytest==9.1.1
-responses==0.26.2
+responses==0.26.3
 # Linting and formatting
-ruff==0.16.2
+ruff==0.16.5
 # `.env` support for `flask run`, development only
-python-dotenv==1.2.2
+python-dotenv==1.2.3
