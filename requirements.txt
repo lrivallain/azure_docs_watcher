@@ -1,6 +1,6 @@
 # Server
 Flask==3.1.3
-gunicorn==26.0.0
+gunicorn==26.2.0
 # Logging
 coloredlogs==15.0.1
 # GitHub access (Atom feeds + anonymous REST): no credential required
